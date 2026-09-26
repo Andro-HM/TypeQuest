@@ -3,7 +3,10 @@ import unittest
 from pathlib import Path
 
 import app as typequest
-from database import create_profile, get_connection, initialize_database, select_profile
+from database import (
+    create_profile, get_classic_level, get_connection, initialize_database,
+    list_classic_levels, select_profile,
+)
 from progression import get_classic_block_statuses
 
 
@@ -24,7 +27,10 @@ def progress_with_stars(total_stars, last_level, speed=10.0):
 
 class ClassicContentTests(unittest.TestCase):
     def test_fifty_unique_levels_have_valid_tiers_and_passages(self):
-        levels = typequest.load_classic_levels()
+        with tempfile.TemporaryDirectory() as folder:
+            database_path = Path(folder) / "typequest.sqlite3"
+            initialize_database(database_path)
+            levels = list_classic_levels(database_path)
         self.assertEqual([level["id"] for level in levels], list(range(1, 51)))
         self.assertEqual(len({level["passage"] for level in levels}), 50)
         self.assertEqual(len({level["title"] for level in levels}), 50)
@@ -106,7 +112,10 @@ class ClassicRouteTests(unittest.TestCase):
         self.assertNotIn(b'href="/play/classic/11"', selection.data)
         locked = self.client.get("/play/classic/11")
         self.assertEqual(locked.status_code, 403)
-        self.assertNotIn(typequest.find_classic_level(11)["passage"].encode(), locked.data)
+        self.assertNotIn(
+            get_classic_level(typequest.DATABASE_PATH, 11)["passage"].encode(),
+            locked.data,
+        )
         self.assertEqual(self.client.get("/play/classic/51").status_code, 404)
 
     def test_route_enforces_each_exact_boundary(self):
@@ -139,7 +148,7 @@ class ClassicRouteTests(unittest.TestCase):
         response = self.client.post("/api/classic/results", json={
             "level_id": 11,
             "profile_id": second_profile,
-            "typed_buffer": typequest.find_classic_level(11)["passage"],
+            "typed_buffer": get_classic_level(typequest.DATABASE_PATH, 11)["passage"],
             "active_elapsed_ms": 60000,
         })
         self.assertEqual(response.status_code, 403)

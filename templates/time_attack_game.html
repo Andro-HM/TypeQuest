@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Time Attack: {{ duration_seconds }} seconds | TypeQuest{% endblock %}
+
+{% block content %}
+  <h1>Time Attack: {{ duration_seconds }} seconds</h1>
+  {% if active_profile %}
+    <p>Playing as {{ active_profile.name }}.</p>
+  {% else %}
+    <p>No active profile. You may play, but this result cannot be saved. <a href="{{ url_for('profiles') }}">Choose a profile</a>.</p>
+  {% endif %}
+  <p>Type in the strip. Backspace rolls the strip back; arrows only reach visible typed characters.</p>
+  <p id="time-attack-status" role="status">Starting in 3...</p>
+  <div
+    id="time-attack-area"
+    class="typing-area time-attack-area"
+    tabindex="0"
+    aria-label="Time Attack typing strip"
+    data-duration-seconds="{{ duration_seconds }}"
+    data-profile-id="{{ active_profile.id if active_profile else '' }}"
+    data-save-url="{{ url_for('submit_time_attack_result') }}"
+  ></div>
+  <div class="typing-controls">
+    <button id="pause-button" type="button">Pause</button>
+    <button id="resume-button" type="button" disabled>Resume</button>
+  </div>
+  <dl class="typing-stats">
+    <div><dt>Time remaining</dt><dd id="time-remaining">{{ duration_seconds }}.0 s</dd></div>
+    <div><dt>Raw WPM</dt><dd id="raw-wpm">0.0</dd></div>
+    <div><dt>Accuracy</dt><dd id="accuracy">0.0%</dd></div>
+    <div><dt>Net WPM</dt><dd id="net-wpm">0.0</dd></div>
+  </dl>
+  <section id="time-attack-result" class="classic-result" hidden>
+    <h2>Time up</h2>
+    <dl class="typing-stats">
+      <div><dt>Raw WPM</dt><dd id="result-raw-wpm"></dd></div>
+      <div><dt>Accuracy</dt><dd id="result-accuracy"></dd></div>
+      <div><dt>Net WPM</dt><dd id="result-net-wpm"></dd></div>
+      <div><dt>Words typed</dt><dd id="result-words"></dd></div>
+      <div><dt>Active time</dt><dd id="result-time"></dd></div>
+      <div><dt>Selected duration</dt><dd id="result-duration"></dd></div>
+    </dl>
+    <p id="save-status" role="status">Saving result...</p>
+    <p><a href="{{ url_for('time_attack') }}">Choose another duration</a></p>
+  </section>
+  <script id="time-attack-chunks" type="application/json">{{ chunks|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+  <script type="module" src="{{ url_for('static', filename='js/time_attack_page.js') }}"></script>
+{% endblock %}

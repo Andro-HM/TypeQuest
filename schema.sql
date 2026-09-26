@@ -17,8 +17,9 @@ INSERT OR IGNORE INTO app_settings (id, active_profile_id) VALUES (1, NULL);
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    mode TEXT NOT NULL,
-    level_id INTEGER NOT NULL,
+    mode TEXT NOT NULL CHECK (mode IN ('classic', 'time_attack')),
+    level_id INTEGER,
+    selected_duration_seconds INTEGER,
     completed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active_elapsed_ms REAL NOT NULL CHECK (active_elapsed_ms > 0),
     retained_characters INTEGER NOT NULL CHECK (retained_characters >= 0),
@@ -27,7 +28,17 @@ CREATE TABLE IF NOT EXISTS sessions (
     raw_wpm REAL NOT NULL CHECK (raw_wpm >= 0),
     accuracy REAL NOT NULL CHECK (accuracy BETWEEN 0 AND 1),
     net_wpm REAL NOT NULL CHECK (net_wpm >= 0),
-    stars_earned INTEGER NOT NULL CHECK (stars_earned BETWEEN 1 AND 3)
+    stars_earned INTEGER,
+    words_typed INTEGER,
+    CHECK (
+        (mode = 'classic' AND level_id IS NOT NULL
+         AND selected_duration_seconds IS NULL AND words_typed IS NULL
+         AND stars_earned BETWEEN 1 AND 3)
+        OR
+        (mode = 'time_attack' AND level_id IS NULL AND stars_earned IS NULL
+         AND selected_duration_seconds IN (30, 60, 120, 180, 300)
+         AND words_typed >= 0)
+    )
 );
 
 CREATE INDEX IF NOT EXISTS sessions_profile_recent
@@ -41,5 +52,18 @@ CREATE TABLE IF NOT EXISTS classic_progress (
     PRIMARY KEY (profile_id, level_id)
 );
 
-PRAGMA user_version = 2;
+CREATE TABLE IF NOT EXISTS classic_levels (
+    id INTEGER PRIMARY KEY CHECK (id BETWEEN 1 AND 50),
+    tier INTEGER NOT NULL CHECK (tier BETWEEN 1 AND 5),
+    title TEXT NOT NULL CHECK (length(trim(title)) > 0),
+    passage TEXT NOT NULL CHECK (length(passage) > 0)
+);
+
+CREATE TABLE IF NOT EXISTS continuous_chunks (
+    id INTEGER PRIMARY KEY CHECK (id BETWEEN 1 AND 100),
+    tier INTEGER NOT NULL CHECK (tier BETWEEN 1 AND 5),
+    text TEXT NOT NULL CHECK (length(text) > 0)
+);
+
+PRAGMA user_version = 3;
 COMMIT;

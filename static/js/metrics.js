@@ -33,3 +33,14 @@ export function calculateMetrics(counts, activeElapsedMs) {
     netWpm: netWpm,
   };
 }
+
+export function countCompletedTargetWords(target, retainedCharacters) {
+  let words = 0;
+  const reachedTarget = target.slice(0, retainedCharacters);
+  for (const character of reachedTarget) {
+    if (character === " ") {
+      words += 1;
+    }
+  }
+  return words;
+}

@@ -96,6 +96,13 @@ button {
   outline-offset: 2px;
 }
 
+.time-attack-area {
+  max-width: 62ch;
+  min-height: 2.4em;
+  overflow: hidden;
+  white-space: pre;
+}
+
 .typing-character.is-untouched {
   color: #687782;
 }

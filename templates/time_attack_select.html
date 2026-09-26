@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Time Attack | TypeQuest{% endblock %}
+
+{% block content %}
+  <h1>Time Attack</h1>
+  <p>Choose a duration. A three-second countdown begins when the game page opens.</p>
+  <ul>
+    {% for duration in durations %}
+      <li><a href="{{ url_for('time_attack', duration=duration) }}">{{ duration }} seconds</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -28,5 +28,26 @@
     {% else %}
       <p>No Classic sessions saved yet.</p>
     {% endif %}
+    <h2>Time Attack</h2>
+    <dl class="typing-stats">
+      <div><dt>Sessions</dt><dd>{{ time_attack_summary.session_count }}</dd></div>
+      <div><dt>Best net WPM</dt><dd>{{ "%.1f"|format(time_attack_summary.best_net_wpm) }}</dd></div>
+      <div><dt>Best accuracy</dt><dd>{{ "%.1f"|format(time_attack_summary.best_accuracy * 100) }}%</dd></div>
+    </dl>
+    <h3>Recent Time Attack sessions</h3>
+    {% if recent_time_attack_sessions %}
+      <ol class="session-list">
+        {% for session in recent_time_attack_sessions %}
+          <li>
+            {{ session.selected_duration_seconds }} seconds on {{ session.completed_at }} UTC:
+            {{ session.words_typed }} words,
+            {{ "%.1f"|format(session.net_wpm) }} net WPM,
+            {{ "%.1f"|format(session.accuracy * 100) }}% accuracy.
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p>No Time Attack sessions saved yet.</p>
+    {% endif %}
   {% endif %}
 {% endblock %}
