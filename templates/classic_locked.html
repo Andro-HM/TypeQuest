@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Classic Level Locked | TypeQuest{% endblock %}
+
+{% block content %}
+  <h1>Classic level locked</h1>
+  {% if not active_profile %}
+    <p>Choose a profile to save stars and unlock later tiers.</p>
+    <p><a href="{{ url_for('profiles') }}">Choose a profile</a></p>
+  {% elif block %}
+    <p>Tier {{ block.tier }} needs {{ block.required_stars }} cumulative best stars from earlier levels. You have {{ block.current_stars }}.</p>
+  {% endif %}
+  <p><a href="{{ url_for('classic_levels') }}">Return to Classic levels</a></p>
+{% endblock %}

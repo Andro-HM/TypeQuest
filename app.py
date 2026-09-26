@@ -16,6 +16,7 @@ from database import (
     save_classic_result,
     select_profile,
 )
+from progression import find_classic_block, get_classic_block_statuses
 
 
 app = Flask(__name__)
@@ -98,13 +99,20 @@ def play():
 @app.route("/play/classic")
 def classic_levels():
     active_profile = get_active_profile(DATABASE_PATH)
-    progress_by_level = {}
+    saved_progress = []
     if active_profile is not None:
         saved_progress = list_classic_progress(DATABASE_PATH, active_profile["id"])
-        progress_by_level = {row["level_id"]: row for row in saved_progress}
+    progress_by_level = {row["level_id"]: row for row in saved_progress}
+    blocks = get_classic_block_statuses(saved_progress)
+    levels = load_classic_levels()
+    for block in blocks:
+        block["levels"] = [
+            level for level in levels
+            if block["first_level"] <= level["id"] <= block["last_level"]
+        ]
     return render_template(
         "classic_levels.html",
-        levels=load_classic_levels(),
+        blocks=blocks,
         active_profile=active_profile,
         progress_by_level=progress_by_level,
     )
@@ -115,10 +123,22 @@ def classic_level(level_id):
     level = find_classic_level(level_id)
     if level is None:
         abort(404)
+    active_profile = get_active_profile(DATABASE_PATH)
+    saved_progress = (
+        list_classic_progress(DATABASE_PATH, active_profile["id"])
+        if active_profile is not None else []
+    )
+    block = find_classic_block(
+        level_id, get_classic_block_statuses(saved_progress)
+    )
+    if block is None or not block["unlocked"]:
+        return render_template(
+            "classic_locked.html", block=block, active_profile=active_profile
+        ), 403
     return render_template(
         "classic_level.html",
         level=level,
-        active_profile=get_active_profile(DATABASE_PATH),
+        active_profile=active_profile,
     )
 
 
@@ -141,6 +161,13 @@ def submit_classic_result():
     submitted_profile_id = payload.get("profile_id")
     if type(submitted_profile_id) is not int or submitted_profile_id != active_profile["id"]:
         return jsonify(error="The active profile changed. This run was not saved."), 409
+
+    saved_progress = list_classic_progress(DATABASE_PATH, active_profile["id"])
+    block = find_classic_block(
+        level_id, get_classic_block_statuses(saved_progress)
+    )
+    if block is None or not block["unlocked"]:
+        return jsonify(error="This Classic level is locked."), 403
 
     typed_buffer = payload.get("typed_buffer")
     target = level["passage"]
@@ -186,6 +213,7 @@ def progress():
     return render_template(
         "progress.html",
         active_profile=active_profile,
+        total_classic_levels=len(load_classic_levels()),
         summary=get_classic_summary(DATABASE_PATH, active_profile["id"]),
         recent_sessions=list_recent_classic_sessions(DATABASE_PATH, active_profile["id"]),
     )

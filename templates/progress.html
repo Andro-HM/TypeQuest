@@ -9,7 +9,7 @@
   {% else %}
     <p>Current profile: {{ active_profile.name }}</p>
     <dl class="typing-stats">
-      <div><dt>Classic levels completed</dt><dd>{{ summary.levels_completed }} of 10</dd></div>
+      <div><dt>Classic levels completed</dt><dd>{{ summary.levels_completed }} of {{ total_classic_levels }}</dd></div>
       <div><dt>Total best stars</dt><dd>{{ summary.total_best_stars }}</dd></div>
       <div><dt>Best Classic net WPM</dt><dd>{{ "%.1f"|format(summary.best_net_wpm) }}</dd></div>
     </dl>
