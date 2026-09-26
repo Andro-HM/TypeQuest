@@ -3,12 +3,14 @@ import {
   ensureStreamLength,
 } from "./chunk_stream.js";
 import {
-  createClock,
-  getActiveElapsedMs,
-  pauseClock,
-  resumeClock,
-  startClock,
-} from "./clock.js";
+  advanceTimeAttackTimer,
+  createTimeAttackTimer,
+  formatRemainingSeconds,
+  getCountdownRemainingMs,
+  getTimeAttackRemainingMs,
+  pauseTimeAttackTimer,
+  resumeTimeAttackTimer,
+} from "./time_attack_timer.js";
 import {
   calculateMetrics,
   countBufferMetrics,
@@ -30,12 +32,8 @@ const durationSeconds = Number(typingArea.dataset.durationSeconds);
 const durationMs = durationSeconds * 1000;
 const stream = createChunkStream(chunks);
 const typingState = createTimeAttackState(stream.target);
-const clock = createClock();
-const run = {
-  phase: "countdown",
-  countdownRemainingMs: 3000,
-  countdownSinceMs: performance.now(),
-};
+const run = createTimeAttackTimer(durationMs, performance.now());
+let transitionTimeoutId = null;
 
 const status = document.getElementById("time-attack-status");
 const pauseButton = document.getElementById("pause-button");
@@ -62,16 +60,17 @@ function renderStrip() {
 }
 
 function renderLive(nowMs) {
-  const elapsedMs = Math.min(durationMs, getActiveElapsedMs(clock, nowMs));
+  const remainingMs = getTimeAttackRemainingMs(run, nowMs);
+  const elapsedMs = durationMs - remainingMs;
   const counts = countBufferMetrics(typingState.typedBuffer, typingState.target);
   const metrics = calculateMetrics(counts, elapsedMs);
-  timeRemaining.textContent = ((durationMs - elapsedMs) / 1000).toFixed(1) + " s";
+  timeRemaining.textContent = formatRemainingSeconds(remainingMs) + " s";
   rawWpm.textContent = metrics.rawWpm.toFixed(1);
   accuracy.textContent = (metrics.accuracy * 100).toFixed(1) + "%";
   netWpm.textContent = metrics.netWpm.toFixed(1);
 
   if (run.phase === "countdown") {
-    const leftMs = Math.max(0, run.countdownRemainingMs - (nowMs - run.countdownSinceMs));
+    const leftMs = getCountdownRemainingMs(run, nowMs);
     status.textContent = "Starting in " + Math.ceil(leftMs / 1000) + "...";
   } else if (run.phase.startsWith("paused")) {
     status.textContent = "Paused. Press Resume to continue.";
@@ -124,12 +123,7 @@ async function submitResult() {
   }
 }
 
-function finishRun(nowMs) {
-  if (run.phase !== "running") {
-    return;
-  }
-  pauseClock(clock, nowMs);
-  run.phase = "finished";
+function finishRun() {
   const counts = countBufferMetrics(typingState.typedBuffer, typingState.target);
   const metrics = calculateMetrics(counts, durationMs);
   const result = {
@@ -139,49 +133,60 @@ function finishRun(nowMs) {
     ),
     activeElapsedMs: durationMs,
   };
-  renderLive(nowMs);
   renderResult(result);
   submitResult();
 }
 
-function update(nowMs) {
-  if (run.phase === "countdown") {
-    const countdownEndsAtMs = run.countdownSinceMs + run.countdownRemainingMs;
-    if (nowMs >= countdownEndsAtMs) {
-      run.phase = "running";
-      // A delayed interval must not give the player extra active time.
-      startClock(clock, countdownEndsAtMs);
-      typingArea.focus();
-    }
+function scheduleNextTransition(nowMs) {
+  clearTimeout(transitionTimeoutId);
+  if (run.phase !== "countdown" && run.phase !== "running") {
+    transitionTimeoutId = null;
+    return;
   }
-  if (run.phase === "running" && getActiveElapsedMs(clock, nowMs) >= durationMs) {
-    finishRun(nowMs);
+
+  const remainingMs = run.phase === "countdown"
+    ? getCountdownRemainingMs(run, nowMs)
+    : getTimeAttackRemainingMs(run, nowMs);
+  transitionTimeoutId = setTimeout(() => {
+    transitionTimeoutId = null;
+    update(performance.now());
+    if (transitionTimeoutId === null &&
+        (run.phase === "countdown" || run.phase === "running")) {
+      scheduleNextTransition(performance.now());
+    }
+  }, Math.max(1, Math.ceil(remainingMs)));
+}
+
+function update(nowMs) {
+  const transition = advanceTimeAttackTimer(run, nowMs);
+  if (transition.started && run.phase === "running") {
+    typingArea.focus();
+    scheduleNextTransition(nowMs);
+  }
+  if (transition.finished) {
+    clearTimeout(transitionTimeoutId);
+    transitionTimeoutId = null;
+    finishRun();
   }
   renderLive(nowMs);
 }
 
 function pauseRun(nowMs) {
-  update(nowMs);
-  if (run.phase === "countdown") {
-    run.countdownRemainingMs = Math.max(
-      0, run.countdownRemainingMs - (nowMs - run.countdownSinceMs)
-    );
-    run.phase = "paused-countdown";
-  } else if (run.phase === "running") {
-    pauseClock(clock, nowMs);
-    run.phase = "paused-running";
+  const transition = pauseTimeAttackTimer(run, nowMs);
+  clearTimeout(transitionTimeoutId);
+  transitionTimeoutId = null;
+  if (transition.finished) {
+    finishRun();
   }
   renderLive(nowMs);
 }
 
 function resumeRun(nowMs) {
-  if (run.phase === "paused-countdown") {
-    run.countdownSinceMs = nowMs;
-    run.phase = "countdown";
-  } else if (run.phase === "paused-running") {
-    resumeClock(clock, nowMs);
-    run.phase = "running";
-    typingArea.focus();
+  if (resumeTimeAttackTimer(run, nowMs)) {
+    scheduleNextTransition(nowMs);
+    if (run.phase === "running") {
+      typingArea.focus();
+    }
   }
   renderLive(nowMs);
 }
@@ -250,5 +255,6 @@ if (document.hidden) {
   pauseRun(performance.now());
 } else {
   renderLive(performance.now());
+  scheduleNextTransition(performance.now());
 }
 setInterval(() => update(performance.now()), 50);

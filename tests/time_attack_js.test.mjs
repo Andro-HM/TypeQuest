@@ -13,6 +13,11 @@ import {
   getWindowStart, moveTimeAttackCursorLeft, moveTimeAttackCursorRight,
   typeTimeAttackCharacter,
 } from "../static/js/time_attack.js";
+import {
+  advanceTimeAttackTimer, createTimeAttackTimer, formatRemainingSeconds,
+  getCountdownRemainingMs, getTimeAttackRemainingMs, pauseTimeAttackTimer,
+  resumeTimeAttackTimer,
+} from "../static/js/time_attack_timer.js";
 
 test("stream uses each chunk once per cycle and avoids a boundary repeat", () => {
   const chunks = Array.from({ length: 100 }, (_, index) => ({
@@ -79,4 +84,71 @@ test("active clock excludes paused time", () => {
   assert.equal(getActiveElapsedMs(clock, 10000), 1000);
   resumeClock(clock, 10000);
   assert.equal(getActiveElapsedMs(clock, 11000), 2000);
+});
+
+test("countdown gives every duration its full active time", () => {
+  for (const durationSeconds of [30, 60, 120, 180, 300]) {
+    const durationMs = durationSeconds * 1000;
+    const timer = createTimeAttackTimer(durationMs, 100);
+    assert.equal(getTimeAttackRemainingMs(timer, 3099), durationMs);
+    assert.equal(advanceTimeAttackTimer(timer, 3099).started, false);
+
+    const start = advanceTimeAttackTimer(timer, 3100);
+    assert.deepEqual(start, { started: true, finished: false });
+    assert.equal(getActiveElapsedMs(timer.clock, 3100), 0);
+    assert.equal(getTimeAttackRemainingMs(timer, 3100), durationMs);
+    assert.equal(advanceTimeAttackTimer(timer, 3100 + durationMs - 1).finished, false);
+    assert.equal(advanceTimeAttackTimer(timer, 3100 + durationMs).finished, true);
+    assert.equal(getActiveElapsedMs(timer.clock, 3100 + durationMs), durationMs);
+    assert.equal(getTimeAttackRemainingMs(timer, 3100 + durationMs), 0);
+    assert.equal(advanceTimeAttackTimer(timer, 3100 + durationMs + 1000).finished, false);
+  }
+});
+
+test("pause, resume, and repeated pauses preserve active time", () => {
+  const timer = createTimeAttackTimer(30000, 0);
+  advanceTimeAttackTimer(timer, 3000);
+  pauseTimeAttackTimer(timer, 13000);
+  assert.equal(timer.phase, "paused-running");
+  assert.equal(getTimeAttackRemainingMs(timer, 100000), 20000);
+  pauseTimeAttackTimer(timer, 100000);
+  assert.equal(getTimeAttackRemainingMs(timer, 100000), 20000);
+
+  assert.equal(resumeTimeAttackTimer(timer, 100000), true);
+  assert.equal(resumeTimeAttackTimer(timer, 100001), false);
+  assert.equal(getTimeAttackRemainingMs(timer, 105000), 15000);
+  pauseTimeAttackTimer(timer, 105000);
+  assert.equal(getTimeAttackRemainingMs(timer, 200000), 15000);
+  resumeTimeAttackTimer(timer, 200000);
+  assert.equal(advanceTimeAttackTimer(timer, 214999).finished, false);
+  assert.equal(advanceTimeAttackTimer(timer, 215000).finished, true);
+  assert.equal(getActiveElapsedMs(timer.clock, 215000), 30000);
+});
+
+test("paused countdown resumes where it stopped", () => {
+  const timer = createTimeAttackTimer(30000, 0);
+  pauseTimeAttackTimer(timer, 1000);
+  assert.equal(timer.phase, "paused-countdown");
+  assert.equal(getCountdownRemainingMs(timer, 100000), 2000);
+  assert.equal(getTimeAttackRemainingMs(timer, 100000), 30000);
+  pauseTimeAttackTimer(timer, 100000);
+  resumeTimeAttackTimer(timer, 100000);
+  assert.equal(advanceTimeAttackTimer(timer, 101999).started, false);
+  assert.equal(advanceTimeAttackTimer(timer, 102000).started, true);
+  assert.equal(getTimeAttackRemainingMs(timer, 102000), 30000);
+});
+
+test("late callbacks finalize once at the exact deadline", () => {
+  const timer = createTimeAttackTimer(30000, 0);
+  const transition = advanceTimeAttackTimer(timer, 34000);
+  assert.deepEqual(transition, { started: true, finished: true });
+  assert.equal(timer.phase, "finished");
+  assert.equal(getActiveElapsedMs(timer.clock, 34000), 30000);
+  assert.equal(getTimeAttackRemainingMs(timer, 34000), 0);
+  assert.deepEqual(advanceTimeAttackTimer(timer, 50000), {
+    started: false, finished: false,
+  });
+  assert.equal(formatRemainingSeconds(40), "0.1");
+  assert.equal(formatRemainingSeconds(0), "0.0");
+  assert.equal(formatRemainingSeconds(-10), "0.0");
 });

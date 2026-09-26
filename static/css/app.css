@@ -524,9 +524,13 @@ h3 {
   outline-offset: 2px;
 }
 
+.time-attack-panel {
+  max-width: 820px;
+}
+
 .time-attack-area {
+  width: min(100%, calc(60ch + 2.7rem + 10px));
   min-height: 5.8rem;
-  max-width: 100%;
   overflow: hidden;
   border-left: 5px solid var(--primary);
   background: #eef5f7;
@@ -802,5 +806,10 @@ h3 {
   .game-panel,
   .result-panel {
     padding: 1rem;
+  }
+
+  .time-attack-area {
+    padding-inline: 0.75rem;
+    font-size: 0.95rem;
   }
 }
