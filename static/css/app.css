@@ -80,3 +80,41 @@ button {
   gap: 1rem;
   margin-bottom: 0.75rem;
 }
+
+.typing-area {
+  border: 1px solid #aeb8c2;
+  border-radius: 4px;
+  background: #ffffff;
+  font-family: monospace;
+  font-size: 1.5rem;
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+.typing-area:focus-visible {
+  outline: 2px solid #234b70;
+  outline-offset: 2px;
+}
+
+.typing-character.is-untouched {
+  color: #687782;
+}
+
+.typing-character.is-correct {
+  background: #d9f1df;
+  color: #14532d;
+}
+
+.typing-character.is-incorrect {
+  background: #fce1e1;
+  color: #a32121;
+}
+
+.typing-character.is-cursor,
+.typing-cursor-end {
+  border-left: 2px solid #234b70;
+}
+
+.typing-note {
+  color: #52616d;
+}
