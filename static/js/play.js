@@ -6,9 +6,25 @@ import {
   moveCursorRight,
   typeCharacter,
 } from "./typing.js";
+import {
+  createClock,
+  getActiveElapsedMs,
+  pauseClock,
+  resumeClock,
+  startClock,
+} from "./clock.js";
+import { calculateMetrics, countBufferMetrics } from "./metrics.js";
 
 const typingArea = document.getElementById("typing-area");
 const state = createTypingState(typingArea.dataset.target);
+const clock = createClock();
+const pauseButton = document.getElementById("pause-button");
+const resumeButton = document.getElementById("resume-button");
+const timerStatus = document.getElementById("timer-status");
+const activeTime = document.getElementById("active-time");
+const rawWpm = document.getElementById("raw-wpm");
+const accuracy = document.getElementById("accuracy");
+const netWpm = document.getElementById("net-wpm");
 
 function renderTarget() {
   const characters = document.createDocumentFragment();
@@ -36,7 +52,37 @@ function renderTarget() {
   typingArea.replaceChildren(characters);
 }
 
+function renderStats() {
+  const elapsedMs = getActiveElapsedMs(clock, performance.now());
+  const counts = countBufferMetrics(state.typedBuffer, state.target);
+  const metrics = calculateMetrics(counts, elapsedMs);
+
+  activeTime.textContent = (elapsedMs / 1000).toFixed(1) + " s";
+  rawWpm.textContent = metrics.rawWpm.toFixed(1);
+  accuracy.textContent = (metrics.accuracy * 100).toFixed(1) + "%";
+  netWpm.textContent = metrics.netWpm.toFixed(1);
+
+  if (clock.isPaused) {
+    timerStatus.textContent = "Paused";
+  } else if (clock.hasStarted) {
+    timerStatus.textContent = "Running";
+  } else {
+    timerStatus.textContent = "Ready";
+  }
+  pauseButton.disabled = clock.isPaused;
+  resumeButton.disabled = !clock.isPaused;
+}
+
 typingArea.addEventListener("keydown", (event) => {
+  if (clock.isPaused) {
+    const isEditingKey = event.key.length === 1 ||
+      ["Backspace", "ArrowLeft", "ArrowRight", "Enter"].includes(event.key);
+    if (isEditingKey) {
+      event.preventDefault();
+    }
+    return;
+  }
+
   let changed = false;
 
   if (event.key === "Backspace") {
@@ -61,10 +107,14 @@ typingArea.addEventListener("keydown", (event) => {
   ) {
     event.preventDefault();
     changed = typeCharacter(state, event.key);
+    if (changed && !clock.hasStarted) {
+      startClock(clock, performance.now());
+    }
   }
 
   if (changed) {
     renderTarget();
+    renderStats();
   }
 });
 
@@ -72,4 +122,29 @@ typingArea.addEventListener("paste", (event) => {
   event.preventDefault();
 });
 
+pauseButton.addEventListener("click", () => {
+  pauseClock(clock, performance.now());
+  renderStats();
+});
+
+resumeButton.addEventListener("click", () => {
+  resumeClock(clock, performance.now());
+  renderStats();
+  typingArea.focus();
+});
+
+function pauseForFocusLoss() {
+  pauseClock(clock, performance.now());
+  renderStats();
+}
+
+window.addEventListener("blur", pauseForFocusLoss);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    pauseForFocusLoss();
+  }
+});
+
 renderTarget();
+renderStats();
+setInterval(renderStats, 100);

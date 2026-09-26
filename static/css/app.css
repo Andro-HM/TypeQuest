@@ -118,3 +118,26 @@ button {
 .typing-note {
   color: #52616d;
 }
+
+.typing-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.typing-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.typing-stats dt {
+  color: #52616d;
+}
+
+.typing-stats dd {
+  font-size: 1.25rem;
+  margin: 0;
+}
