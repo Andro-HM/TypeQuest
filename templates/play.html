@@ -3,8 +3,29 @@
 {% block title %}Play | TypeQuest{% endblock %}
 
 {% block content %}
-  <h1>Play</h1>
-  <p>Choose a mode to begin. Survival will come later.</p>
-  <p><a href="{{ url_for('classic_levels') }}">Classic mode</a></p>
-  <p><a href="{{ url_for('time_attack') }}">Time Attack mode</a></p>
+  <div class="page-heading">
+    <span class="eyebrow">Game modes</span>
+    <h1>Choose your challenge</h1>
+    <p>Practice at your own pace or put your skills against the clock.</p>
+  </div>
+  <div class="card-grid mode-grid">
+    <article class="card mode-card">
+      <span class="badge badge-available">Available</span>
+      <h2>Classic</h2>
+      <p>50 levels across five tiers. Earn accuracy-based stars to unlock the next tier.</p>
+      <a class="button button-primary" href="{{ url_for('classic_levels') }}">Play Classic <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="card mode-card">
+      <span class="badge badge-available">Available</span>
+      <h2>Time Attack</h2>
+      <p>Choose 30 seconds to 5 minutes, then type through a continuous stream.</p>
+      <a class="button button-primary" href="{{ url_for('time_attack') }}">Play Time Attack <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="card mode-card is-unavailable">
+      <span class="badge badge-muted">Coming later</span>
+      <h2>Survival</h2>
+      <p>Stay ahead of the moving boundary in a future mode.</p>
+      <span class="button button-disabled" aria-disabled="true">Not available yet</span>
+    </article>
+  </div>
 {% endblock %}

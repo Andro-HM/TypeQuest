@@ -3,42 +3,54 @@
 {% block title %}Profiles | TypeQuest{% endblock %}
 
 {% block content %}
-  <h1>Profiles</h1>
+  <div class="page-heading">
+    <span class="eyebrow">Local players</span>
+    <h1>Profiles</h1>
+    <p>Choose whose progress to save on this device.</p>
+  </div>
 
   {% if active_profile %}
-    <p class="active-profile">Active profile: <strong>{{ active_profile["name"] }}</strong></p>
+    <p class="notice notice-success">Active profile: <strong>{{ active_profile["name"] }}</strong></p>
   {% else %}
-    <p class="active-profile">No active profile yet.</p>
+    <p class="notice">No active profile yet. Create one to save your results.</p>
   {% endif %}
 
-  <h2>Create a profile</h2>
-  {% if error %}
-    <p class="form-error" role="alert">{{ error }}</p>
-  {% endif %}
-  <form action="{{ url_for('create_profile_route') }}" method="post">
-    <label for="profile-name">Profile name</label>
-    <input id="profile-name" name="name" type="text" maxlength="24" value="{{ entered_name }}" required>
-    <button type="submit">Create profile</button>
-  </form>
+  <section class="card form-card" aria-labelledby="create-profile-heading">
+    <div class="section-header"><div><span class="eyebrow">New player</span><h2 id="create-profile-heading">Create a profile</h2></div></div>
+    {% if error %}
+      <p id="profile-error" class="form-error" role="alert">{{ error }}</p>
+    {% endif %}
+    <form class="profile-form" action="{{ url_for('create_profile_route') }}" method="post">
+      <div class="form-field">
+        <label for="profile-name">Profile name</label>
+        <input id="profile-name" name="name" type="text" maxlength="24" value="{{ entered_name }}" required {% if error %}aria-invalid="true" aria-describedby="profile-error"{% endif %}>
+        <small>1–24 characters. Names are not case-sensitive.</small>
+      </div>
+      <button class="button button-primary" type="submit">Create profile</button>
+    </form>
+  </section>
 
-  <h2>Existing profiles</h2>
+  <section class="page-section" aria-labelledby="existing-profiles-heading">
+  <div class="section-header"><div><span class="eyebrow">Players on this device</span><h2 id="existing-profiles-heading">Existing profiles</h2></div></div>
   {% if profiles %}
-    <ul class="profile-list">
+    <ul class="card-grid profile-grid">
       {% for profile in profiles %}
-        <li>
-          <span>{{ profile["name"] }}</span>
+        <li class="card profile-card{% if active_profile and profile['id'] == active_profile['id'] %} is-selected{% endif %}">
+          <span class="profile-avatar" aria-hidden="true">{{ profile['name'][0]|upper }}</span>
+          <h3>{{ profile["name"] }}</h3>
           {% if active_profile and profile["id"] == active_profile["id"] %}
-            <strong>Active</strong>
+            <span class="badge badge-complete">Active profile</span>
           {% else %}
             <form action="{{ url_for('select_profile_route') }}" method="post">
               <input type="hidden" name="profile_id" value="{{ profile['id'] }}">
-              <button type="submit">Select</button>
+              <button class="button button-secondary" type="submit">Select profile</button>
             </form>
           {% endif %}
         </li>
       {% endfor %}
     </ul>
   {% else %}
-    <p>No profiles have been created yet.</p>
+    <div class="card empty-state"><p>No profiles have been created yet.</p></div>
   {% endif %}
+  </section>
 {% endblock %}

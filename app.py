@@ -1,5 +1,6 @@
 import math
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
@@ -28,6 +29,11 @@ app = Flask(__name__)
 DATABASE_PATH = Path(app.instance_path) / "typequest.sqlite3"
 TIME_ATTACK_DURATIONS = (30, 60, 120, 180, 300)
 initialize_database(DATABASE_PATH)
+
+
+@app.template_filter("display_datetime")
+def display_datetime(value):
+    return datetime.fromisoformat(value).strftime("%d %b %Y, %I:%M %p UTC")
 
 
 def recompute_classic_result(typed_buffer, target, active_elapsed_ms):

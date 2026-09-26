@@ -147,7 +147,7 @@ class TimeAttackRouteTests(unittest.TestCase):
             connection.close()
         progress_page = self.client.get("/progress")
         self.assertIn(b"Sessions</dt><dd>1", progress_page.data)
-        self.assertIn(b"30 seconds on", progress_page.data)
+        self.assertIn(b'<th scope="row">30 sec</th>', progress_page.data)
         self.assertIn(b"2 words", progress_page.data)
 
     def test_empty_run_profile_isolation_and_bad_order(self):

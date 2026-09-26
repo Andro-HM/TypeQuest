@@ -3,51 +3,90 @@
 {% block title %}Progress | TypeQuest{% endblock %}
 
 {% block content %}
-  <h1>Progress</h1>
+  <div class="page-heading">
+    <span class="eyebrow">Your record</span>
+    <h1>Progress</h1>
+    <p>See your saved best results and recent sessions.</p>
+  </div>
   {% if not active_profile %}
-    <p>No active profile. <a href="{{ url_for('profiles') }}">Choose a profile</a> to see progress.</p>
+    <div class="card empty-state">
+      <h2>Choose a profile to see progress</h2>
+      <p>Results are saved separately for each profile.</p>
+      <a class="button button-primary" href="{{ url_for('profiles') }}">Choose a profile</a>
+    </div>
   {% else %}
-    <p>Current profile: {{ active_profile.name }}</p>
-    <dl class="typing-stats">
-      <div><dt>Classic levels completed</dt><dd>{{ summary.levels_completed }} of {{ total_classic_levels }}</dd></div>
+    <p class="notice notice-success">Current profile: <strong>{{ active_profile.name }}</strong></p>
+    <section class="page-section" aria-labelledby="classic-progress-heading">
+      <div class="section-header">
+        <div>
+          <span class="eyebrow">Level journey</span>
+          <h2 id="classic-progress-heading">Classic</h2>
+        </div>
+        <a class="text-link" href="{{ url_for('classic_levels') }}">Browse levels <span aria-hidden="true">→</span></a>
+      </div>
+    <dl class="metric-grid">
+      <div><dt>Levels completed</dt><dd>{{ summary.levels_completed }} of {{ total_classic_levels }}</dd></div>
       <div><dt>Total best stars</dt><dd>{{ summary.total_best_stars }}</dd></div>
       <div><dt>Best Classic net WPM</dt><dd>{{ "%.1f"|format(summary.best_net_wpm) }}</dd></div>
     </dl>
-    <h2>Recent Classic sessions</h2>
+    <div class="section-header compact-header"><h3>Recent Classic sessions</h3></div>
     {% if recent_sessions %}
-      <ol class="session-list">
-        {% for session in recent_sessions %}
-          <li>
-            Level {{ session.level_id }} on {{ session.completed_at }} UTC:
-            {{ "%.1f"|format(session.net_wpm) }} net WPM,
-            {{ "%.1f"|format(session.accuracy * 100) }}% accuracy,
-            {{ session.stars_earned }} stars.
-          </li>
-        {% endfor %}
-      </ol>
+      <div class="card table-wrap">
+        <table class="session-table">
+          <caption class="visually-hidden">Recent Classic sessions</caption>
+          <thead><tr><th scope="col">Level</th><th scope="col">Net WPM</th><th scope="col">Accuracy</th><th scope="col">Stars</th><th scope="col">Date</th></tr></thead>
+          <tbody>
+            {% for session in recent_sessions %}
+              <tr>
+                <th scope="row">Level {{ session.level_id }}</th>
+                <td>{{ "%.1f"|format(session.net_wpm) }}</td>
+                <td>{{ "%.1f"|format(session.accuracy * 100) }}%</td>
+                <td>{{ session.stars_earned }} / 3</td>
+                <td><time datetime="{{ session.completed_at|replace(' ', 'T') }}Z">{{ session.completed_at|display_datetime }}</time></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     {% else %}
-      <p>No Classic sessions saved yet.</p>
+      <div class="card empty-state"><p>No Classic sessions saved yet.</p><a class="text-link" href="{{ url_for('classic_levels') }}">Try a Classic level <span aria-hidden="true">→</span></a></div>
     {% endif %}
-    <h2>Time Attack</h2>
-    <dl class="typing-stats">
+    </section>
+    <section class="page-section" aria-labelledby="time-attack-progress-heading">
+      <div class="section-header">
+        <div>
+          <span class="eyebrow">Timed practice</span>
+          <h2 id="time-attack-progress-heading">Time Attack</h2>
+        </div>
+        <a class="text-link" href="{{ url_for('time_attack') }}">Choose a duration <span aria-hidden="true">→</span></a>
+      </div>
+    <dl class="metric-grid">
       <div><dt>Sessions</dt><dd>{{ time_attack_summary.session_count }}</dd></div>
       <div><dt>Best net WPM</dt><dd>{{ "%.1f"|format(time_attack_summary.best_net_wpm) }}</dd></div>
       <div><dt>Best accuracy</dt><dd>{{ "%.1f"|format(time_attack_summary.best_accuracy * 100) }}%</dd></div>
     </dl>
-    <h3>Recent Time Attack sessions</h3>
+    <div class="section-header compact-header"><h3>Recent Time Attack sessions</h3></div>
     {% if recent_time_attack_sessions %}
-      <ol class="session-list">
-        {% for session in recent_time_attack_sessions %}
-          <li>
-            {{ session.selected_duration_seconds }} seconds on {{ session.completed_at }} UTC:
-            {{ session.words_typed }} words,
-            {{ "%.1f"|format(session.net_wpm) }} net WPM,
-            {{ "%.1f"|format(session.accuracy * 100) }}% accuracy.
-          </li>
-        {% endfor %}
-      </ol>
+      <div class="card table-wrap">
+        <table class="session-table">
+          <caption class="visually-hidden">Recent Time Attack sessions</caption>
+          <thead><tr><th scope="col">Duration</th><th scope="col">Words</th><th scope="col">Net WPM</th><th scope="col">Accuracy</th><th scope="col">Date</th></tr></thead>
+          <tbody>
+            {% for session in recent_time_attack_sessions %}
+              <tr>
+                <th scope="row">{% if session.selected_duration_seconds < 60 %}{{ session.selected_duration_seconds }} sec{% else %}{{ session.selected_duration_seconds // 60 }} min{% endif %}</th>
+                <td>{{ session.words_typed }} words</td>
+                <td>{{ "%.1f"|format(session.net_wpm) }}</td>
+                <td>{{ "%.1f"|format(session.accuracy * 100) }}%</td>
+                <td><time datetime="{{ session.completed_at|replace(' ', 'T') }}Z">{{ session.completed_at|display_datetime }}</time></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     {% else %}
-      <p>No Time Attack sessions saved yet.</p>
+      <div class="card empty-state"><p>No Time Attack sessions saved yet.</p><a class="text-link" href="{{ url_for('time_attack') }}">Start a timed challenge <span aria-hidden="true">→</span></a></div>
     {% endif %}
+    </section>
   {% endif %}
 {% endblock %}

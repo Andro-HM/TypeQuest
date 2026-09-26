@@ -3,11 +3,19 @@
 {% block title %}Time Attack | TypeQuest{% endblock %}
 
 {% block content %}
-  <h1>Time Attack</h1>
-  <p>Choose a duration. A three-second countdown begins when the game page opens.</p>
-  <ul>
+  <div class="page-heading">
+    <span class="eyebrow">Time Attack mode</span>
+    <h1>Choose your time limit</h1>
+    <p>Keep typing through a continuous stream. A three-second countdown starts when the challenge opens.</p>
+  </div>
+  <div class="card-grid duration-grid">
     {% for duration in durations %}
-      <li><a href="{{ url_for('time_attack', duration=duration) }}">{{ duration }} seconds</a></li>
+      <article class="card duration-card">
+        <span class="eyebrow">Timed challenge</span>
+        <h2>{% if duration < 60 %}{{ duration }} sec{% else %}{{ duration // 60 }} min{% endif %}</h2>
+        <p>Type as far as you can before time runs out.</p>
+        <a class="button button-primary" href="{{ url_for('time_attack', duration=duration) }}">Start challenge</a>
+      </article>
     {% endfor %}
-  </ul>
+  </div>
 {% endblock %}

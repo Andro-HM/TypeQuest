@@ -3,6 +3,36 @@
 {% block title %}Home | TypeQuest{% endblock %}
 
 {% block content %}
-  <h1>Home</h1>
-  <p>Welcome to TypeQuest. This page will introduce the typing game.</p>
+  <section class="hero card">
+    <span class="eyebrow">Typing practice, made purposeful</span>
+    <h1>TypeQuest</h1>
+    <p class="lead">Build speed and precision through focused typing challenges. Pick a level, race the clock, and see your progress grow.</p>
+    <a class="button button-primary" href="{{ url_for('play') }}">Start playing <span aria-hidden="true">→</span></a>
+  </section>
+
+  <section class="page-section" aria-labelledby="home-modes-heading">
+    <div class="section-header">
+      <div>
+        <span class="eyebrow">Choose your challenge</span>
+        <h2 id="home-modes-heading">Three ways to play</h2>
+      </div>
+    </div>
+    <div class="card-grid mode-grid">
+      <article class="card mode-card">
+        <span class="badge badge-available">Available</span>
+        <h3>Classic</h3>
+        <p>Work through 50 levels and earn stars for accuracy.</p>
+      </article>
+      <article class="card mode-card">
+        <span class="badge badge-available">Available</span>
+        <h3>Time Attack</h3>
+        <p>Choose a time limit and keep the typing strip moving.</p>
+      </article>
+      <article class="card mode-card is-unavailable">
+        <span class="badge badge-muted">Coming later</span>
+        <h3>Survival</h3>
+        <p>A new challenge is on the way.</p>
+      </article>
+    </div>
+  </section>
 {% endblock %}

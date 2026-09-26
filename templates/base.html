@@ -8,13 +8,19 @@
   </head>
   <body>
     <header class="site-header">
-      <nav aria-label="Main navigation">
-        <a href="{{ url_for('home') }}">Home</a>
-        <a href="{{ url_for('play') }}">Play</a>
-        <a href="{{ url_for('progress') }}">Progress</a>
-        <a href="{{ url_for('profiles') }}">Profiles</a>
-        <a href="{{ url_for('settings') }}">Settings</a>
-      </nav>
+      <div class="header-inner">
+        <a class="brand" href="{{ url_for('home') }}" aria-label="TypeQuest home">
+          <span class="brand-mark" aria-hidden="true">TQ</span>
+          <span>TypeQuest</span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a class="nav-link{% if request.endpoint == 'home' %} is-active{% endif %}" href="{{ url_for('home') }}"{% if request.endpoint == 'home' %} aria-current="page"{% endif %}>Home</a>
+          <a class="nav-link{% if request.path.startswith('/play') %} is-active{% endif %}" href="{{ url_for('play') }}"{% if request.endpoint == 'play' %} aria-current="page"{% endif %}>Play</a>
+          <a class="nav-link{% if request.endpoint == 'progress' %} is-active{% endif %}" href="{{ url_for('progress') }}"{% if request.endpoint == 'progress' %} aria-current="page"{% endif %}>Progress</a>
+          <a class="nav-link{% if request.path.startswith('/profiles') %} is-active{% endif %}" href="{{ url_for('profiles') }}"{% if request.endpoint == 'profiles' %} aria-current="page"{% endif %}>Profiles</a>
+          <a class="nav-link{% if request.endpoint == 'settings' %} is-active{% endif %}" href="{{ url_for('settings') }}"{% if request.endpoint == 'settings' %} aria-current="page"{% endif %}>Settings</a>
+        </nav>
+      </div>
     </header>
 
     <main class="page-content">

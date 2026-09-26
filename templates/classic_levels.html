@@ -3,35 +3,63 @@
 {% block title %}Classic Levels | TypeQuest{% endblock %}
 
 {% block content %}
-  <h1>Classic</h1>
-  <p>Choose a level from five tiers. Earn saved best stars to unlock later tiers.</p>
+  <div class="page-heading">
+    <span class="eyebrow">Classic mode</span>
+    <h1>Choose a level</h1>
+    <p>50 levels across five tiers. Your best stars from earlier levels unlock each new tier.</p>
+  </div>
   {% if active_profile %}
-    <p>Progress is shown for {{ active_profile.name }}.</p>
+    <p class="notice notice-success">Showing saved progress for <strong>{{ active_profile.name }}</strong>.</p>
   {% else %}
-    <p>
+    <p class="notice">
       No active profile. You can play Tier 1, but results will not be saved and later tiers stay locked.
       <a href="{{ url_for('profiles') }}">Choose a profile</a>.
     </p>
   {% endif %}
   {% for block in blocks %}
-    <section>
-      <h2>Tier {{ block.tier }} / Levels {{ block.first_level }}–{{ block.last_level }}</h2>
-      {% if not block.unlocked %}
-        <p>{{ block.current_stars }} / {{ block.required_stars }} cumulative best stars required to unlock this tier.</p>
+    <section class="page-section tier-section" aria-labelledby="tier-{{ block.tier }}-heading">
+      <div class="section-header tier-header">
+        <div>
+          <span class="eyebrow">Levels {{ block.first_level }}–{{ block.last_level }}</span>
+          <h2 id="tier-{{ block.tier }}-heading">Tier {{ block.tier }}</h2>
+        </div>
+        <span class="badge {{ 'badge-available' if block.unlocked else 'badge-muted' }}">{{ 'Unlocked' if block.unlocked else 'Locked' }}</span>
+      </div>
+      {% if block.required_stars %}
+        <div class="tier-progress">
+          <p>{{ block.current_stars }} / {{ block.required_stars }} cumulative best stars {{ 'earned for this tier' if block.unlocked else 'required to unlock this tier' }}.</p>
+          <progress class="progress-bar" value="{{ block.current_stars if block.current_stars < block.required_stars else block.required_stars }}" max="{{ block.required_stars }}">{{ block.current_stars }} / {{ block.required_stars }}</progress>
+        </div>
+      {% else %}
+        <p class="section-note">Open from the start</p>
       {% endif %}
-      <ol class="level-list" start="{{ block.first_level }}">
+      <ol class="card-grid level-grid">
         {% for level in block.levels %}
           {% set saved = progress_by_level.get(level.id) %}
-          <li>
-            {% if block.unlocked %}
-              <a href="{{ url_for('classic_level', level_id=level.id) }}">Level {{ level.id }}: {{ level.title }}</a>
-              <span>Unlocked</span>
-            {% else %}
-              <span>Level {{ level.id }}: {{ level.title }}</span>
-              <span>Locked</span>
-            {% endif %}
+          <li class="card level-card{% if not block.unlocked %} is-locked{% endif %}">
+            <div class="level-card-top">
+              <span class="level-number">Level {{ level.id }}</span>
+              {% if not block.unlocked %}
+                <span class="badge badge-muted">LOCKED</span>
+              {% elif saved %}
+                <span class="badge badge-complete">Completed</span>
+              {% else %}
+                <span class="badge badge-available">Unlocked</span>
+              {% endif %}
+            </div>
+            <h3>{{ level.title }}</h3>
             {% if saved %}
-              <span>Best: {{ saved.best_stars }} stars, {{ "%.1f"|format(saved.best_net_wpm) }} net WPM</span>
+              <p class="level-best">Best: {{ saved.best_stars }} stars <span class="star-display" role="img" aria-label="{{ saved.best_stars }} of 3 stars">{{ '★' * saved.best_stars }}{{ '☆' * (3 - saved.best_stars) }}</span></p>
+              <p class="level-speed">{{ "%.1f"|format(saved.best_net_wpm) }} best net WPM</p>
+            {% elif block.unlocked %}
+              <p class="level-best muted-text">Not attempted</p>
+            {% else %}
+              <p class="level-best muted-text">Unlock this tier to play</p>
+            {% endif %}
+            {% if block.unlocked %}
+              <a class="button button-primary" href="{{ url_for('classic_level', level_id=level.id) }}">Play level {{ level.id }}</a>
+            {% else %}
+              <span class="button button-disabled" aria-disabled="true">Locked</span>
             {% endif %}
           </li>
         {% endfor %}
