@@ -14,10 +14,12 @@ import {
   startClock,
 } from "./clock.js";
 import { calculateMetrics, countBufferMetrics } from "./metrics.js";
+import { completeClassicRun, createClassicRun } from "./classic.js";
 
 const typingArea = document.getElementById("typing-area");
 const state = createTypingState(typingArea.dataset.target);
 const clock = createClock();
+const classicRun = createClassicRun();
 const pauseButton = document.getElementById("pause-button");
 const resumeButton = document.getElementById("resume-button");
 const timerStatus = document.getElementById("timer-status");
@@ -25,6 +27,12 @@ const activeTime = document.getElementById("active-time");
 const rawWpm = document.getElementById("raw-wpm");
 const accuracy = document.getElementById("accuracy");
 const netWpm = document.getElementById("net-wpm");
+const resultPanel = document.getElementById("classic-result");
+const resultRawWpm = document.getElementById("result-raw-wpm");
+const resultAccuracy = document.getElementById("result-accuracy");
+const resultNetWpm = document.getElementById("result-net-wpm");
+const resultTime = document.getElementById("result-time");
+const resultStars = document.getElementById("result-stars");
 
 function renderTarget() {
   const characters = document.createDocumentFragment();
@@ -62,19 +70,30 @@ function renderStats() {
   accuracy.textContent = (metrics.accuracy * 100).toFixed(1) + "%";
   netWpm.textContent = metrics.netWpm.toFixed(1);
 
-  if (clock.isPaused) {
+  if (classicRun.isComplete) {
+    timerStatus.textContent = "Completed";
+  } else if (clock.isPaused) {
     timerStatus.textContent = "Paused";
   } else if (clock.hasStarted) {
     timerStatus.textContent = "Running";
   } else {
     timerStatus.textContent = "Ready";
   }
-  pauseButton.disabled = clock.isPaused;
-  resumeButton.disabled = !clock.isPaused;
+  pauseButton.disabled = classicRun.isComplete || clock.isPaused;
+  resumeButton.disabled = classicRun.isComplete || !clock.isPaused;
+}
+
+function renderResult(result) {
+  resultRawWpm.textContent = result.rawWpm.toFixed(1);
+  resultAccuracy.textContent = (result.accuracy * 100).toFixed(1) + "%";
+  resultNetWpm.textContent = result.netWpm.toFixed(1);
+  resultTime.textContent = (result.completionTimeMs / 1000).toFixed(1) + " s";
+  resultStars.textContent = result.starsEarned + " of 3";
+  resultPanel.hidden = false;
 }
 
 typingArea.addEventListener("keydown", (event) => {
-  if (clock.isPaused) {
+  if (classicRun.isComplete || clock.isPaused) {
     const isEditingKey = event.key.length === 1 ||
       ["Backspace", "ArrowLeft", "ArrowRight", "Enter"].includes(event.key);
     if (isEditingKey) {
@@ -113,8 +132,16 @@ typingArea.addEventListener("keydown", (event) => {
   }
 
   if (changed) {
+    let result = null;
+    if (state.typedBuffer.length === state.target.length) {
+      result = completeClassicRun(classicRun, state, clock, performance.now());
+    }
+
     renderTarget();
     renderStats();
+    if (result !== null) {
+      renderResult(result);
+    }
   }
 });
 
@@ -123,11 +150,17 @@ typingArea.addEventListener("paste", (event) => {
 });
 
 pauseButton.addEventListener("click", () => {
+  if (classicRun.isComplete) {
+    return;
+  }
   pauseClock(clock, performance.now());
   renderStats();
 });
 
 resumeButton.addEventListener("click", () => {
+  if (classicRun.isComplete) {
+    return;
+  }
   resumeClock(clock, performance.now());
   renderStats();
   typingArea.focus();

@@ -1,0 +1,64 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "tier": 1,
+      "title": "The Workshop Bell",
+      "passage": "At nine, the workshop bell rang across the courtyard. Mira set a box of loose screws beside the old clock and opened her notebook. She wrote down each small repair before touching a tool. By noon, the clock had a steady tick again, and the bell sounded less lonely in the quiet hall."
+    },
+    {
+      "id": 2,
+      "tier": 1,
+      "title": "A Library Map",
+      "passage": "The library kept a hand drawn map near its front desk. It showed narrow aisles, reading tables, and a tiny room for local history. Arun followed the map to a shelf he had never noticed. Between two atlases he found a book of simple machines, full of sketches that made each idea easy to test."
+    },
+    {
+      "id": 3,
+      "tier": 1,
+      "title": "Rain at the Stop",
+      "passage": "Rain began just as the bus reached the corner. People moved under the small roof and made room for a woman carrying a stack of paper. A child counted the drops sliding down the sign. When the bus arrived, everyone climbed aboard in order, and the driver waited until the last umbrella was folded."
+    },
+    {
+      "id": 4,
+      "tier": 1,
+      "title": "The Rooftop Garden",
+      "passage": "On the roof, ten clay pots stood in a neat row. Each held a different herb, with a paper label tied to the rim. Leena checked the soil with one finger before adding water. The mint needed a little more shade, so she moved it beside the wall. By evening, the leaves had lifted toward the cool air."
+    },
+    {
+      "id": 5,
+      "tier": 1,
+      "title": "Harbor Lights",
+      "passage": "At dusk, the harbor lamps came on one by one. A fishing boat returned slowly while two friends watched from the stone steps. They could hear ropes tap against the masts and gulls call over the water. The boat reached its place before dark, and a warm light appeared in the window of the little dock office."
+    },
+    {
+      "id": 6,
+      "tier": 1,
+      "title": "The Small Museum",
+      "passage": "The town museum had only three rooms, but every object had a story. Near the door stood a wooden radio that once carried news to the whole street. Nia read its label, then listened to a recording of its soft crackle. She left with a question for her grandfather about the songs he had heard when he was young."
+    },
+    {
+      "id": 7,
+      "tier": 1,
+      "title": "Morning Market",
+      "passage": "The market opened before sunrise. Sellers arranged baskets of oranges, fresh bread, and bright flowers along the lane. Dev brought a short list so he would not forget the rice. He stopped to help a vendor lift a heavy crate, then chose a small bunch of flowers for the kitchen table. The street was busy by the time he left."
+    },
+    {
+      "id": 8,
+      "tier": 1,
+      "title": "A Clear Night",
+      "passage": "The school telescope stood on a tripod in the field. Clouds had covered the sky all week, but tonight the stars were sharp. Sana adjusted the focus until the moon looked clear at the edge. She stepped aside so everyone could take a turn, then drew what she saw in a plain notebook under a small red lamp."
+    },
+    {
+      "id": 9,
+      "tier": 1,
+      "title": "The Bicycle Chain",
+      "passage": "A bicycle chain slipped off near the bridge. Omar turned the bike over, checked the gears, and put the chain back with careful hands. He wiped the oil from his fingers and gave the wheel a slow spin. It moved smoothly, so he packed his cloth and continued along the path before the afternoon heat grew strong."
+    },
+    {
+      "id": 10,
+      "tier": 1,
+      "title": "When the Lights Went Out",
+      "passage": "The lights went out during the family quiz. For a moment, everyone sat still and listened to the fan slow down. Then Ada found a lantern, and the game continued around the table. Without the television in the next room, they could hear each answer clearly. The power returned just as the final question was read."
+    }
+  ]
+}

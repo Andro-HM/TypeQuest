@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Classic Level {{ level.id }} | TypeQuest{% endblock %}
+
+{% block content %}
+  <h1>Classic Level {{ level.id }}: {{ level.title }}</h1>
+  <p>Click the passage and type. You can correct earlier positions before entering the final character.</p>
+  <div id="typing-area" class="typing-area" tabindex="0" aria-label="Classic typing area" data-target="{{ level.passage }}">{{ level.passage }}</div>
+  <div class="typing-controls">
+    <button id="pause-button" type="button">Pause</button>
+    <button id="resume-button" type="button" disabled>Resume</button>
+    <span id="timer-status">Ready</span>
+  </div>
+  <dl class="typing-stats">
+    <div><dt>Active time</dt><dd id="active-time">0.0 s</dd></div>
+    <div><dt>Raw WPM</dt><dd id="raw-wpm">0.0</dd></div>
+    <div><dt>Accuracy</dt><dd id="accuracy">0.0%</dd></div>
+    <div><dt>Net WPM</dt><dd id="net-wpm">0.0</dd></div>
+  </dl>
+  <section id="classic-result" class="classic-result" hidden>
+    <h2>Level complete</h2>
+    <dl class="typing-stats">
+      <div><dt>Raw WPM</dt><dd id="result-raw-wpm"></dd></div>
+      <div><dt>Accuracy</dt><dd id="result-accuracy"></dd></div>
+      <div><dt>Net WPM</dt><dd id="result-net-wpm"></dd></div>
+      <div><dt>Completion time</dt><dd id="result-time"></dd></div>
+      <div><dt>Stars earned</dt><dd id="result-stars"></dd></div>
+    </dl>
+    <p>These results are not saved yet.</p>
+    <p><a href="{{ url_for('classic_levels') }}">Choose another level</a></p>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script type="module" src="{{ url_for('static', filename='js/play.js') }}"></script>
+{% endblock %}

@@ -141,3 +141,13 @@ button {
   font-size: 1.25rem;
   margin: 0;
 }
+
+.level-list li {
+  margin-bottom: 0.5rem;
+}
+
+.classic-result {
+  border-top: 1px solid #d9dee3;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}

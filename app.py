@@ -1,7 +1,8 @@
+import json
 import sqlite3
 from pathlib import Path
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, abort, redirect, render_template, request, url_for
 
 from database import (
     create_profile,
@@ -14,7 +15,14 @@ from database import (
 
 app = Flask(__name__)
 DATABASE_PATH = Path(app.instance_path) / "typequest.sqlite3"
+CLASSIC_CONTENT_PATH = Path(app.root_path) / "content" / "classic.json"
 initialize_database(DATABASE_PATH)
+
+
+def load_classic_levels():
+    with CLASSIC_CONTENT_PATH.open(encoding="ascii") as content_file:
+        content = json.load(content_file)
+    return content["levels"]
 
 
 def profile_page(error=None, entered_name=""):
@@ -35,6 +43,19 @@ def home():
 @app.route("/play")
 def play():
     return render_template("play.html")
+
+
+@app.route("/play/classic")
+def classic_levels():
+    return render_template("classic_levels.html", levels=load_classic_levels())
+
+
+@app.route("/play/classic/<int:level_id>")
+def classic_level(level_id):
+    for level in load_classic_levels():
+        if level["id"] == level_id:
+            return render_template("classic_level.html", level=level)
+    abort(404)
 
 
 @app.route("/progress")

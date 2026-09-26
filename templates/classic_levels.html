@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Classic Levels | TypeQuest{% endblock %}
+
+{% block content %}
+  <h1>Classic</h1>
+  <p>Choose one of the 10 available levels. Results are shown at the end but are not saved yet.</p>
+  <ol class="level-list">
+    {% for level in levels %}
+      <li><a href="{{ url_for('classic_level', level_id=level.id) }}">Level {{ level.id }}: {{ level.title }}</a></li>
+    {% endfor %}
+  </ol>
+{% endblock %}

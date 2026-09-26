@@ -4,22 +4,6 @@
 
 {% block content %}
   <h1>Play</h1>
-  <p>This is a small typing prototype. Click the passage, then type. Use Backspace and the arrow keys to make corrections.</p>
-  <div id="typing-area" class="typing-area" tabindex="0" aria-label="Typing practice area" data-target="Hello, TypeQuest!"></div>
-  <div class="typing-controls">
-    <button id="pause-button" type="button">Pause</button>
-    <button id="resume-button" type="button" disabled>Resume</button>
-    <span id="timer-status">Ready</span>
-  </div>
-  <dl class="typing-stats">
-    <div><dt>Active time</dt><dd id="active-time">0.0 s</dd></div>
-    <div><dt>Raw WPM</dt><dd id="raw-wpm">0.0</dd></div>
-    <div><dt>Accuracy</dt><dd id="accuracy">0.0%</dd></div>
-    <div><dt>Net WPM</dt><dd id="net-wpm">0.0</dd></div>
-  </dl>
-  <p class="typing-note">The sample passage is temporary; game modes will be added later.</p>
-{% endblock %}
-
-{% block scripts %}
-  <script type="module" src="{{ url_for('static', filename='js/play.js') }}"></script>
+  <p>Choose a mode to begin. Classic is available now; other modes will come later.</p>
+  <p><a href="{{ url_for('classic_levels') }}">Classic mode</a></p>
 {% endblock %}
