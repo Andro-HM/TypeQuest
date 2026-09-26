@@ -4,5 +4,41 @@
 
 {% block content %}
   <h1>Profiles</h1>
-  <p>Local profile creation and selection will be available here.</p>
+
+  {% if active_profile %}
+    <p class="active-profile">Active profile: <strong>{{ active_profile["name"] }}</strong></p>
+  {% else %}
+    <p class="active-profile">No active profile yet.</p>
+  {% endif %}
+
+  <h2>Create a profile</h2>
+  {% if error %}
+    <p class="form-error" role="alert">{{ error }}</p>
+  {% endif %}
+  <form action="{{ url_for('create_profile_route') }}" method="post">
+    <label for="profile-name">Profile name</label>
+    <input id="profile-name" name="name" type="text" maxlength="24" value="{{ entered_name }}" required>
+    <button type="submit">Create profile</button>
+  </form>
+
+  <h2>Existing profiles</h2>
+  {% if profiles %}
+    <ul class="profile-list">
+      {% for profile in profiles %}
+        <li>
+          <span>{{ profile["name"] }}</span>
+          {% if active_profile and profile["id"] == active_profile["id"] %}
+            <strong>Active</strong>
+          {% else %}
+            <form action="{{ url_for('select_profile_route') }}" method="post">
+              <input type="hidden" name="profile_id" value="{{ profile['id'] }}">
+              <button type="submit">Select</button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No profiles have been created yet.</p>
+  {% endif %}
 {% endblock %}
