@@ -4,10 +4,24 @@
 
 {% block content %}
   <h1>Classic</h1>
-  <p>Choose one of the 10 available levels. Results are shown at the end but are not saved yet.</p>
+  <p>Choose one of the 10 available levels.</p>
+  {% if active_profile %}
+    <p>Progress is shown for {{ active_profile.name }}.</p>
+  {% else %}
+    <p>
+      No active profile. You can play, but results will not be saved.
+      <a href="{{ url_for('profiles') }}">Choose a profile</a>.
+    </p>
+  {% endif %}
   <ol class="level-list">
     {% for level in levels %}
-      <li><a href="{{ url_for('classic_level', level_id=level.id) }}">Level {{ level.id }}: {{ level.title }}</a></li>
+      {% set saved = progress_by_level.get(level.id) %}
+      <li>
+        <a href="{{ url_for('classic_level', level_id=level.id) }}">Level {{ level.id }}: {{ level.title }}</a>
+        {% if saved %}
+          <span>Best: {{ saved.best_stars }} stars, {{ "%.1f"|format(saved.best_net_wpm) }} net WPM</span>
+        {% endif %}
+      </li>
     {% endfor %}
   </ol>
 {% endblock %}

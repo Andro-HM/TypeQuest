@@ -5,7 +5,24 @@
 {% block content %}
   <h1>Classic Level {{ level.id }}: {{ level.title }}</h1>
   <p>Click the passage and type. You can correct earlier positions before entering the final character.</p>
-  <div id="typing-area" class="typing-area" tabindex="0" aria-label="Classic typing area" data-target="{{ level.passage }}">{{ level.passage }}</div>
+  {% if active_profile %}
+    <p>Playing as {{ active_profile.name }}.</p>
+  {% else %}
+    <p>
+      No active profile. This run cannot be saved.
+      <a href="{{ url_for('profiles') }}">Choose a profile</a> first.
+    </p>
+  {% endif %}
+  <div
+    id="typing-area"
+    class="typing-area"
+    tabindex="0"
+    aria-label="Classic typing area"
+    data-target="{{ level.passage }}"
+    data-level-id="{{ level.id }}"
+    data-profile-id="{{ active_profile.id if active_profile else '' }}"
+    data-save-url="{{ url_for('submit_classic_result') }}"
+  >{{ level.passage }}</div>
   <div class="typing-controls">
     <button id="pause-button" type="button">Pause</button>
     <button id="resume-button" type="button" disabled>Resume</button>
@@ -26,8 +43,8 @@
       <div><dt>Completion time</dt><dd id="result-time"></dd></div>
       <div><dt>Stars earned</dt><dd id="result-stars"></dd></div>
     </dl>
-    <p>These results are not saved yet.</p>
-    <p><a href="{{ url_for('classic_levels') }}">Choose another level</a></p>
+    <p id="save-status" role="status">Saving result...</p>
+    <p id="result-next" hidden><a href="{{ url_for('classic_levels') }}">Choose another level</a></p>
   </section>
 {% endblock %}
 

@@ -151,3 +151,7 @@ button {
   margin-top: 1.5rem;
   padding-top: 1rem;
 }
+
+.session-list li {
+  margin-bottom: 0.5rem;
+}

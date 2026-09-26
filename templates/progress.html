@@ -4,5 +4,29 @@
 
 {% block content %}
   <h1>Progress</h1>
-  <p>Your typing results and progress will appear here.</p>
+  {% if not active_profile %}
+    <p>No active profile. <a href="{{ url_for('profiles') }}">Choose a profile</a> to see progress.</p>
+  {% else %}
+    <p>Current profile: {{ active_profile.name }}</p>
+    <dl class="typing-stats">
+      <div><dt>Classic levels completed</dt><dd>{{ summary.levels_completed }} of 10</dd></div>
+      <div><dt>Total best stars</dt><dd>{{ summary.total_best_stars }}</dd></div>
+      <div><dt>Best Classic net WPM</dt><dd>{{ "%.1f"|format(summary.best_net_wpm) }}</dd></div>
+    </dl>
+    <h2>Recent Classic sessions</h2>
+    {% if recent_sessions %}
+      <ol class="session-list">
+        {% for session in recent_sessions %}
+          <li>
+            Level {{ session.level_id }} on {{ session.completed_at }} UTC:
+            {{ "%.1f"|format(session.net_wpm) }} net WPM,
+            {{ "%.1f"|format(session.accuracy * 100) }}% accuracy,
+            {{ session.stars_earned }} stars.
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p>No Classic sessions saved yet.</p>
+    {% endif %}
+  {% endif %}
 {% endblock %}

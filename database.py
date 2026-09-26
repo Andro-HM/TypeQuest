@@ -3,7 +3,8 @@ from pathlib import Path
 
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
-SCHEMA_VERSION = 1
+MIGRATION_PATH = Path(__file__).with_name("migration_1_to_2.sql")
+SCHEMA_VERSION = 2
 
 
 def get_connection(database_path):
@@ -23,6 +24,9 @@ def initialize_database(database_path):
         if version == 0:
             schema = SCHEMA_PATH.read_text(encoding="utf-8")
             connection.executescript(schema)
+        elif version == 1:
+            migration = MIGRATION_PATH.read_text(encoding="utf-8")
+            connection.executescript(migration)
         elif version != SCHEMA_VERSION:
             raise RuntimeError(f"Unsupported database version: {version}")
     finally:
@@ -93,5 +97,112 @@ def select_profile(database_path, profile_id):
                 (profile_id, profile_id),
             )
         return cursor.rowcount == 1
+    finally:
+        connection.close()
+
+
+def list_classic_progress(database_path, profile_id):
+    connection = get_connection(database_path)
+    try:
+        return connection.execute(
+            """
+            SELECT level_id, best_stars, best_net_wpm
+            FROM classic_progress
+            WHERE profile_id = ?
+            ORDER BY level_id
+            """,
+            (profile_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+
+
+def get_classic_summary(database_path, profile_id):
+    connection = get_connection(database_path)
+    try:
+        return connection.execute(
+            """
+            SELECT COUNT(*) AS levels_completed,
+                   COALESCE(SUM(best_stars), 0) AS total_best_stars,
+                   COALESCE(MAX(best_net_wpm), 0) AS best_net_wpm
+            FROM classic_progress
+            WHERE profile_id = ?
+            """,
+            (profile_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+
+
+def list_recent_classic_sessions(database_path, profile_id):
+    connection = get_connection(database_path)
+    try:
+        return connection.execute(
+            """
+            SELECT id, level_id, completed_at, active_elapsed_ms,
+                   raw_wpm, accuracy, net_wpm, stars_earned
+            FROM sessions
+            WHERE profile_id = ? AND mode = 'classic'
+            ORDER BY id DESC
+            LIMIT 10
+            """,
+            (profile_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+
+
+def save_classic_result(database_path, profile_id, level_id, result):
+    connection = get_connection(database_path)
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        with connection:
+            active_profile = connection.execute(
+                "SELECT active_profile_id FROM app_settings WHERE id = 1"
+            ).fetchone()
+            if active_profile is None or active_profile["active_profile_id"] != profile_id:
+                raise ValueError("The active profile changed. This run was not saved.")
+
+            cursor = connection.execute(
+                """
+                INSERT INTO sessions (
+                    profile_id, mode, level_id, active_elapsed_ms,
+                    retained_characters, correct_positions, opportunity_positions,
+                    raw_wpm, accuracy, net_wpm, stars_earned
+                ) VALUES (?, 'classic', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    profile_id,
+                    level_id,
+                    result["active_elapsed_ms"],
+                    result["retained_characters"],
+                    result["correct_positions"],
+                    result["opportunity_positions"],
+                    result["raw_wpm"],
+                    result["accuracy"],
+                    result["net_wpm"],
+                    result["stars_earned"],
+                ),
+            )
+            connection.execute(
+                """
+                INSERT INTO classic_progress (
+                    profile_id, level_id, best_stars, best_net_wpm
+                ) VALUES (?, ?, ?, ?)
+                ON CONFLICT(profile_id, level_id) DO UPDATE SET
+                    best_stars = MAX(classic_progress.best_stars, excluded.best_stars),
+                    best_net_wpm = MAX(classic_progress.best_net_wpm, excluded.best_net_wpm)
+                """,
+                (profile_id, level_id, result["stars_earned"], result["net_wpm"]),
+            )
+            progress = connection.execute(
+                """
+                SELECT best_stars, best_net_wpm
+                FROM classic_progress
+                WHERE profile_id = ? AND level_id = ?
+                """,
+                (profile_id, level_id),
+            ).fetchone()
+        return cursor.lastrowid, progress
     finally:
         connection.close()

@@ -1,20 +1,6 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS profiles (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 24),
-    name_key TEXT NOT NULL UNIQUE,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS app_settings (
-    id INTEGER PRIMARY KEY CHECK (id = 1),
-    active_profile_id INTEGER REFERENCES profiles(id) ON DELETE SET NULL
-);
-
-INSERT OR IGNORE INTO app_settings (id, active_profile_id) VALUES (1, NULL);
-
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE sessions (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     mode TEXT NOT NULL,
@@ -30,10 +16,10 @@ CREATE TABLE IF NOT EXISTS sessions (
     stars_earned INTEGER NOT NULL CHECK (stars_earned BETWEEN 1 AND 3)
 );
 
-CREATE INDEX IF NOT EXISTS sessions_profile_recent
+CREATE INDEX sessions_profile_recent
 ON sessions (profile_id, id DESC);
 
-CREATE TABLE IF NOT EXISTS classic_progress (
+CREATE TABLE classic_progress (
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     level_id INTEGER NOT NULL,
     best_stars INTEGER NOT NULL CHECK (best_stars BETWEEN 1 AND 3),

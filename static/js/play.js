@@ -33,6 +33,8 @@ const resultAccuracy = document.getElementById("result-accuracy");
 const resultNetWpm = document.getElementById("result-net-wpm");
 const resultTime = document.getElementById("result-time");
 const resultStars = document.getElementById("result-stars");
+const saveStatus = document.getElementById("save-status");
+const resultNext = document.getElementById("result-next");
 
 function renderTarget() {
   const characters = document.createDocumentFragment();
@@ -92,6 +94,34 @@ function renderResult(result) {
   resultPanel.hidden = false;
 }
 
+async function submitResult(result) {
+  const profileId = typingArea.dataset.profileId;
+  const payload = {
+    profile_id: profileId === "" ? null : Number(profileId),
+    level_id: Number(typingArea.dataset.levelId),
+    typed_buffer: state.typedBuffer,
+    active_elapsed_ms: result.completionTimeMs,
+  };
+
+  try {
+    const response = await fetch(typingArea.dataset.saveUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const savedResult = await response.json();
+    if (response.ok) {
+      saveStatus.textContent = "Saved for the active profile.";
+    } else {
+      saveStatus.textContent = "Not saved: " + savedResult.error;
+    }
+  } catch {
+    saveStatus.textContent = "Could not confirm the save. Check Progress before trying again.";
+  } finally {
+    resultNext.hidden = false;
+  }
+}
+
 typingArea.addEventListener("keydown", (event) => {
   if (classicRun.isComplete || clock.isPaused) {
     const isEditingKey = event.key.length === 1 ||
@@ -141,6 +171,7 @@ typingArea.addEventListener("keydown", (event) => {
     renderStats();
     if (result !== null) {
       renderResult(result);
+      submitResult(result);
     }
   }
 });
