@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Delete profile | TypeQuest{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <span class="eyebrow">Local players</span>
+    <h1>Delete profile?</h1>
+    <p>This action cannot be undone.</p>
+  </div>
+  <section class="card message-card" aria-labelledby="delete-profile-heading">
+    <h2 id="delete-profile-heading">Delete {{ profile['name'] }}?</h2>
+    <p>The profile and its saved Classic progress, Time Attack results, and Survival results will be removed. Game content will remain.</p>
+    {% if error %}
+      <p class="form-error" role="alert">{{ error }}</p>
+    {% endif %}
+    <form action="{{ url_for('delete_profile_route', profile_id=profile['id']) }}" method="post">
+      <button class="button button-danger" type="submit" name="confirm_delete" value="yes">Yes, delete profile</button>
+      <a class="button button-secondary" href="{{ url_for('profiles') }}">Cancel</a>
+    </form>
+  </section>
+{% endblock %}

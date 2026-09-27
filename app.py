@@ -7,9 +7,11 @@ from flask import Flask, abort, jsonify, redirect, render_template, request, url
 
 from database import (
     create_profile,
+    delete_profile,
     get_active_profile,
     get_classic_level,
     get_classic_summary,
+    get_profile,
     get_survival_summary,
     get_time_attack_summary,
     initialize_database,
@@ -20,6 +22,7 @@ from database import (
     list_recent_classic_sessions,
     list_recent_survival_sessions,
     list_recent_time_attack_sessions,
+    rename_profile,
     save_classic_result,
     save_survival_result,
     save_time_attack_result,
@@ -77,13 +80,18 @@ def recompute_classic_result(typed_buffer, target, active_elapsed_ms):
     }
 
 
-def profile_page(error=None, entered_name=""):
+def profile_page(error=None, entered_name="", rename_error=None,
+                 rename_profile_id=None, rename_entered_name="", notice=None):
     return render_template(
         "profiles.html",
         profiles=list_profiles(DATABASE_PATH),
         active_profile=get_active_profile(DATABASE_PATH),
         error=error,
         entered_name=entered_name,
+        rename_error=rename_error,
+        rename_profile_id=rename_profile_id,
+        rename_entered_name=rename_entered_name,
+        notice=notice,
     )
 
 
@@ -361,7 +369,11 @@ def progress():
 
 @app.route("/profiles")
 def profiles():
-    return profile_page()
+    notices = {
+        "renamed": "Profile renamed.",
+        "deleted": "Profile deleted.",
+    }
+    return profile_page(notice=notices.get(request.args.get("notice")))
 
 
 @app.route("/profiles/create", methods=["POST"])
@@ -384,6 +396,42 @@ def select_profile_route():
     if profile_id is None or not select_profile(DATABASE_PATH, profile_id):
         return profile_page(error="Select an existing profile."), 400
     return redirect(url_for("profiles"))
+
+
+@app.route("/profiles/<int:profile_id>/rename", methods=["POST"])
+def rename_profile_route(profile_id):
+    name = request.form.get("name", "")
+    try:
+        if not rename_profile(DATABASE_PATH, profile_id, name):
+            abort(404)
+    except ValueError as error:
+        return profile_page(
+            rename_error=str(error), rename_profile_id=profile_id,
+            rename_entered_name=name,
+        ), 400
+    except sqlite3.IntegrityError:
+        return profile_page(
+            rename_error="A profile with this name already exists.",
+            rename_profile_id=profile_id, rename_entered_name=name,
+        ), 400
+    return redirect(url_for("profiles", notice="renamed"))
+
+
+@app.route("/profiles/<int:profile_id>/delete", methods=["GET", "POST"])
+def delete_profile_route(profile_id):
+    profile = get_profile(DATABASE_PATH, profile_id)
+    if profile is None:
+        abort(404)
+    if request.method == "GET":
+        return render_template("profile_delete.html", profile=profile)
+    if request.form.get("confirm_delete") != "yes":
+        return render_template(
+            "profile_delete.html", profile=profile,
+            error="Confirm deletion with the button below.",
+        ), 400
+    if not delete_profile(DATABASE_PATH, profile_id):
+        abort(404)
+    return redirect(url_for("profiles", notice="deleted"))
 
 
 @app.route("/settings")

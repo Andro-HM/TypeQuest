@@ -120,7 +120,9 @@ def get_active_profile(database_path):
         connection.close()
 
 
-def create_profile(database_path, name):
+def prepare_profile_name(name):
+    if not isinstance(name, str):
+        raise ValueError("Enter a profile name.")
     clean_name = name.strip()
     if not clean_name:
         raise ValueError("Enter a profile name.")
@@ -128,7 +130,11 @@ def create_profile(database_path, name):
         raise ValueError("Profile names must be 24 characters or fewer.")
 
     # SQLite's NOCASE comparison covers ASCII only, so use Python's casefold.
-    name_key = clean_name.casefold()
+    return clean_name, clean_name.casefold()
+
+
+def create_profile(database_path, name):
+    clean_name, name_key = prepare_profile_name(name)
     connection = get_connection(database_path)
     try:
         with connection:
@@ -141,6 +147,43 @@ def create_profile(database_path, name):
                 (cursor.lastrowid,),
             )
         return cursor.lastrowid
+    finally:
+        connection.close()
+
+
+def get_profile(database_path, profile_id):
+    connection = get_connection(database_path)
+    try:
+        return connection.execute(
+            "SELECT id, name, created_at FROM profiles WHERE id = ?",
+            (profile_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+
+
+def rename_profile(database_path, profile_id, new_name):
+    clean_name, name_key = prepare_profile_name(new_name)
+    connection = get_connection(database_path)
+    try:
+        with connection:
+            cursor = connection.execute(
+                "UPDATE profiles SET name = ?, name_key = ? WHERE id = ?",
+                (clean_name, name_key, profile_id),
+            )
+        return cursor.rowcount == 1
+    finally:
+        connection.close()
+
+
+def delete_profile(database_path, profile_id):
+    connection = get_connection(database_path)
+    try:
+        with connection:
+            cursor = connection.execute(
+                "DELETE FROM profiles WHERE id = ?", (profile_id,)
+            )
+        return cursor.rowcount == 1
     finally:
         connection.close()
 

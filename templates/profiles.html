@@ -9,6 +9,10 @@
     <p>Choose whose progress to save on this device.</p>
   </div>
 
+  {% if notice %}
+    <p class="notice notice-success" role="status">{{ notice }}</p>
+  {% endif %}
+
   {% if active_profile %}
     <p class="notice notice-success">Active profile: <strong>{{ active_profile["name"] }}</strong></p>
   {% else %}
@@ -40,12 +44,26 @@
           <h3>{{ profile["name"] }}</h3>
           {% if active_profile and profile["id"] == active_profile["id"] %}
             <span class="badge badge-complete">Active profile</span>
-          {% else %}
-            <form action="{{ url_for('select_profile_route') }}" method="post">
-              <input type="hidden" name="profile_id" value="{{ profile['id'] }}">
-              <button class="button button-secondary" type="submit">Select profile</button>
-            </form>
           {% endif %}
+          <div class="profile-actions">
+            {% if not active_profile or profile["id"] != active_profile["id"] %}
+              <form action="{{ url_for('select_profile_route') }}" method="post">
+                <input type="hidden" name="profile_id" value="{{ profile['id'] }}">
+                <button class="button button-secondary" type="submit">Select profile</button>
+              </form>
+            {% endif %}
+            <a class="button button-danger" href="{{ url_for('delete_profile_route', profile_id=profile['id']) }}">Delete</a>
+          </div>
+          <form class="profile-rename-form" action="{{ url_for('rename_profile_route', profile_id=profile['id']) }}" method="post">
+            <div class="form-field">
+              <label for="rename-profile-{{ profile['id'] }}">Rename {{ profile['name'] }}</label>
+              <input id="rename-profile-{{ profile['id'] }}" name="name" type="text" maxlength="24" required value="{{ rename_entered_name if rename_profile_id == profile['id'] else profile['name'] }}" {% if rename_error and rename_profile_id == profile['id'] %}aria-invalid="true" aria-describedby="rename-error-{{ profile['id'] }}"{% endif %}>
+            </div>
+            {% if rename_error and rename_profile_id == profile['id'] %}
+              <p id="rename-error-{{ profile['id'] }}" class="form-error" role="alert">{{ rename_error }}</p>
+            {% endif %}
+            <button class="button button-secondary" type="submit">Rename</button>
+          </form>
         </li>
       {% endfor %}
     </ul>

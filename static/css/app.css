@@ -258,6 +258,18 @@ h3 {
   color: var(--primary-hover);
 }
 
+.button-danger,
+.button-danger:visited {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.button-danger:hover {
+  background: #fbe0e0;
+  color: var(--danger);
+}
+
 .button:disabled,
 .button-disabled,
 .button-disabled:visited {
@@ -763,7 +775,30 @@ h3 {
 }
 
 .profile-card form {
+  width: 100%;
+}
+
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-top: auto;
+}
+
+.profile-actions form {
+  width: auto;
+}
+
+.profile-rename-form {
+  display: grid;
+  width: 100%;
+  gap: 0.55rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.profile-rename-form .form-field {
+  min-width: 0;
 }
 
 .profile-avatar {

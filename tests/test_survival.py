@@ -182,7 +182,9 @@ class SurvivalRouteTests(unittest.TestCase):
         self.assertIsNotNone(match)
         embedded = json.loads(match.group(1))
         self.assertEqual(embedded, self.chunks)
-        self.assertIn(b'href="/play/survival"', self.client.get("/").data)
+        home = self.client.get("/").data
+        self.assertIn(b"Survival</h3>", home)
+        self.assertNotIn(b'href="/play/survival"', home)
         self.assertIn(b'href="/play/survival"', self.client.get("/play").data)
 
     def test_no_profile_and_profile_mismatch_are_rejected(self):
