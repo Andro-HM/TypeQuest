@@ -6,7 +6,7 @@
   <section class="hero card">
     <span class="eyebrow">Typing practice, made purposeful</span>
     <h1>TypeQuest</h1>
-    <p class="lead">Build speed and precision through focused typing challenges. Pick a level, race the clock, and see your progress grow.</p>
+    <p class="lead">Build speed and precision through focused typing challenges. Pick a Classic level, earn stars, and see your progress grow.</p>
     <a class="button button-primary" href="{{ url_for('play') }}">Start playing <span aria-hidden="true">→</span></a>
   </section>
 
@@ -14,19 +14,19 @@
     <div class="section-header">
       <div>
         <span class="eyebrow">Choose your challenge</span>
-        <h2 id="home-modes-heading">Three ways to play</h2>
+        <h2 id="home-modes-heading">Your challenges</h2>
       </div>
     </div>
     <div class="card-grid mode-grid">
       <article class="card mode-card">
         <span class="badge badge-available">Available</span>
         <h3>Classic</h3>
-        <p>Work through 50 levels and earn stars for accuracy.</p>
+        <p>Work through 20 levels across two tiers and earn stars for accuracy.</p>
       </article>
-      <article class="card mode-card">
-        <span class="badge badge-available">Available</span>
+      <article class="card mode-card is-unavailable">
+        <span class="badge badge-muted">Coming next</span>
         <h3>Time Attack</h3>
-        <p>Choose a time limit and keep the typing strip moving.</p>
+        <p>A timed challenge is coming in the next development phase.</p>
       </article>
       <article class="card mode-card is-unavailable">
         <span class="badge badge-muted">Coming later</span>

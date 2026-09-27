@@ -1,9 +1,6 @@
 CLASSIC_BLOCKS = (
     {"tier": 1, "first_level": 1, "last_level": 10, "required_stars": 0},
     {"tier": 2, "first_level": 11, "last_level": 20, "required_stars": 23},
-    {"tier": 3, "first_level": 21, "last_level": 30, "required_stars": 45},
-    {"tier": 4, "first_level": 31, "last_level": 40, "required_stars": 68},
-    {"tier": 5, "first_level": 41, "last_level": 50, "required_stars": 90},
 )
 
 

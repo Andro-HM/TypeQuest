@@ -4,9 +4,7 @@ from pathlib import Path
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 SEED_CONTENT_PATH = Path(__file__).with_name("seed_content.sql")
-MIGRATION_1_TO_2_PATH = Path(__file__).with_name("migration_1_to_2.sql")
-MIGRATION_2_TO_3_PATH = Path(__file__).with_name("migration_2_to_3.sql")
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 1
 
 
 def get_connection(database_path):
@@ -23,32 +21,12 @@ def initialize_database(database_path):
     connection = get_connection(database_path)
     try:
         version = connection.execute("PRAGMA user_version").fetchone()[0]
-        if version == 0:
-            schema = SCHEMA_PATH.read_text(encoding="utf-8")
-            connection.executescript(schema)
-            version = SCHEMA_VERSION
-        else:
-            if version == 1:
-                migration = MIGRATION_1_TO_2_PATH.read_text(encoding="utf-8")
-                connection.executescript(migration)
-                version = 2
-            if version == 2:
-                migration = MIGRATION_2_TO_3_PATH.read_text(encoding="utf-8")
-                connection.executescript(migration)
-                version = 3
-            if version != SCHEMA_VERSION:
-                raise RuntimeError(f"Unsupported database version: {version}")
+        if version not in (0, SCHEMA_VERSION):
+            raise RuntimeError(f"Unsupported database version: {version}")
 
-        # An earlier local v3 may lack these tables. The schema uses IF NOT EXISTS,
-        # so applying it here preserves profiles, sessions, and progress.
-        content_tables = {
-            row["name"] for row in connection.execute(
-                "SELECT name FROM sqlite_master WHERE type = 'table'"
-            )
-        }
-        if "classic_levels" not in content_tables or "continuous_chunks" not in content_tables:
-            schema = SCHEMA_PATH.read_text(encoding="utf-8")
-            connection.executescript(schema)
+        # The dedicated Week-1 database uses one idempotent Classic-only schema.
+        schema = SCHEMA_PATH.read_text(encoding="utf-8")
+        connection.executescript(schema)
 
         seed = SEED_CONTENT_PATH.read_text(encoding="ascii")
         connection.executescript(seed)
@@ -85,17 +63,6 @@ def get_classic_level(database_path, level_id):
             (level_id,),
         ).fetchone()
         return dict(row) if row is not None else None
-    finally:
-        connection.close()
-
-
-def list_continuous_chunks(database_path):
-    connection = get_connection(database_path)
-    try:
-        rows = connection.execute(
-            "SELECT id, tier, text FROM continuous_chunks ORDER BY id"
-        ).fetchall()
-        return [dict(row) for row in rows]
     finally:
         connection.close()
 
@@ -205,78 +172,6 @@ def list_recent_classic_sessions(database_path, profile_id):
             """,
             (profile_id,),
         ).fetchall()
-    finally:
-        connection.close()
-
-
-def get_time_attack_summary(database_path, profile_id):
-    connection = get_connection(database_path)
-    try:
-        return connection.execute(
-            """
-            SELECT COUNT(*) AS session_count,
-                   COALESCE(MAX(net_wpm), 0) AS best_net_wpm,
-                   COALESCE(MAX(accuracy), 0) AS best_accuracy
-            FROM sessions
-            WHERE profile_id = ? AND mode = 'time_attack'
-            """,
-            (profile_id,),
-        ).fetchone()
-    finally:
-        connection.close()
-
-
-def list_recent_time_attack_sessions(database_path, profile_id):
-    connection = get_connection(database_path)
-    try:
-        return connection.execute(
-            """
-            SELECT id, completed_at, selected_duration_seconds, active_elapsed_ms,
-                   retained_characters, words_typed, raw_wpm, accuracy, net_wpm
-            FROM sessions
-            WHERE profile_id = ? AND mode = 'time_attack'
-            ORDER BY id DESC
-            LIMIT 10
-            """,
-            (profile_id,),
-        ).fetchall()
-    finally:
-        connection.close()
-
-
-def save_time_attack_result(database_path, profile_id, duration_seconds, result):
-    connection = get_connection(database_path)
-    try:
-        connection.execute("BEGIN IMMEDIATE")
-        with connection:
-            active_profile = connection.execute(
-                "SELECT active_profile_id FROM app_settings WHERE id = 1"
-            ).fetchone()
-            if active_profile is None or active_profile["active_profile_id"] != profile_id:
-                raise ValueError("The active profile changed. This run was not saved.")
-
-            cursor = connection.execute(
-                """
-                INSERT INTO sessions (
-                    profile_id, mode, selected_duration_seconds, active_elapsed_ms,
-                    retained_characters, correct_positions, opportunity_positions,
-                    raw_wpm, accuracy, net_wpm, words_typed
-                ) VALUES (?, 'time_attack', ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    profile_id,
-                    duration_seconds,
-                    result["active_elapsed_ms"],
-                    result["retained_characters"],
-                    result["correct_positions"],
-                    result["opportunity_positions"],
-                    result["raw_wpm"],
-                    result["accuracy"],
-                    result["net_wpm"],
-                    result["words_typed"],
-                ),
-            )
-        return cursor.lastrowid
     finally:
         connection.close()
 

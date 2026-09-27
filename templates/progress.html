@@ -52,41 +52,5 @@
       <div class="card empty-state"><p>No Classic sessions saved yet.</p><a class="text-link" href="{{ url_for('classic_levels') }}">Try a Classic level <span aria-hidden="true">→</span></a></div>
     {% endif %}
     </section>
-    <section class="page-section" aria-labelledby="time-attack-progress-heading">
-      <div class="section-header">
-        <div>
-          <span class="eyebrow">Timed practice</span>
-          <h2 id="time-attack-progress-heading">Time Attack</h2>
-        </div>
-        <a class="text-link" href="{{ url_for('time_attack') }}">Choose a duration <span aria-hidden="true">→</span></a>
-      </div>
-    <dl class="metric-grid">
-      <div><dt>Sessions</dt><dd>{{ time_attack_summary.session_count }}</dd></div>
-      <div><dt>Best net WPM</dt><dd>{{ "%.1f"|format(time_attack_summary.best_net_wpm) }}</dd></div>
-      <div><dt>Best accuracy</dt><dd>{{ "%.1f"|format(time_attack_summary.best_accuracy * 100) }}%</dd></div>
-    </dl>
-    <div class="section-header compact-header"><h3>Recent Time Attack sessions</h3></div>
-    {% if recent_time_attack_sessions %}
-      <div class="card table-wrap">
-        <table class="session-table">
-          <caption class="visually-hidden">Recent Time Attack sessions</caption>
-          <thead><tr><th scope="col">Duration</th><th scope="col">Words</th><th scope="col">Net WPM</th><th scope="col">Accuracy</th><th scope="col">Date</th></tr></thead>
-          <tbody>
-            {% for session in recent_time_attack_sessions %}
-              <tr>
-                <th scope="row">{% if session.selected_duration_seconds < 60 %}{{ session.selected_duration_seconds }} sec{% else %}{{ session.selected_duration_seconds // 60 }} min{% endif %}</th>
-                <td>{{ session.words_typed }} words</td>
-                <td>{{ "%.1f"|format(session.net_wpm) }}</td>
-                <td>{{ "%.1f"|format(session.accuracy * 100) }}%</td>
-                <td><time datetime="{{ session.completed_at|replace(' ', 'T') }}Z">{{ session.completed_at|display_datetime }}</time></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="card empty-state"><p>No Time Attack sessions saved yet.</p><a class="text-link" href="{{ url_for('time_attack') }}">Start a timed challenge <span aria-hidden="true">→</span></a></div>
-    {% endif %}
-    </section>
   {% endif %}
 {% endblock %}

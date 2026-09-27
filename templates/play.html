@@ -6,20 +6,20 @@
   <div class="page-heading">
     <span class="eyebrow">Game modes</span>
     <h1>Choose your challenge</h1>
-    <p>Practice at your own pace or put your skills against the clock.</p>
+    <p>Play Classic now. More modes are planned for later development phases.</p>
   </div>
   <div class="card-grid mode-grid">
     <article class="card mode-card">
       <span class="badge badge-available">Available</span>
       <h2>Classic</h2>
-      <p>50 levels across five tiers. Earn accuracy-based stars to unlock the next tier.</p>
+      <p>20 levels across two tiers. Earn accuracy-based stars to unlock Tier 2.</p>
       <a class="button button-primary" href="{{ url_for('classic_levels') }}">Play Classic <span aria-hidden="true">→</span></a>
     </article>
-    <article class="card mode-card">
-      <span class="badge badge-available">Available</span>
+    <article class="card mode-card is-unavailable">
+      <span class="badge badge-muted">Coming next</span>
       <h2>Time Attack</h2>
-      <p>Choose 30 seconds to 5 minutes, then type through a continuous stream.</p>
-      <a class="button button-primary" href="{{ url_for('time_attack') }}">Play Time Attack <span aria-hidden="true">→</span></a>
+      <p>A timed typing challenge is planned for the next development phase.</p>
+      <span class="button button-disabled" aria-disabled="true">Not available yet</span>
     </article>
     <article class="card mode-card is-unavailable">
       <span class="badge badge-muted">Coming later</span>

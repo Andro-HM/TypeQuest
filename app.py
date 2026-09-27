@@ -10,24 +10,19 @@ from database import (
     get_active_profile,
     get_classic_level,
     get_classic_summary,
-    get_time_attack_summary,
     initialize_database,
     list_classic_progress,
     list_classic_levels,
-    list_continuous_chunks,
     list_profiles,
     list_recent_classic_sessions,
-    list_recent_time_attack_sessions,
     save_classic_result,
-    save_time_attack_result,
     select_profile,
 )
 from progression import find_classic_block, get_classic_block_statuses
 
 
 app = Flask(__name__)
-DATABASE_PATH = Path(app.instance_path) / "typequest.sqlite3"
-TIME_ATTACK_DURATIONS = (30, 60, 120, 180, 300)
+DATABASE_PATH = Path(app.instance_path) / "typequest_week1.sqlite3"
 initialize_database(DATABASE_PATH)
 
 
@@ -92,28 +87,6 @@ def home():
 @app.route("/play")
 def play():
     return render_template("play.html")
-
-
-@app.route("/play/time-attack")
-def time_attack():
-    if "duration" not in request.args:
-        return render_template(
-            "time_attack_select.html", durations=TIME_ATTACK_DURATIONS
-        )
-
-    try:
-        duration_seconds = int(request.args["duration"])
-    except ValueError:
-        abort(400)
-    if duration_seconds not in TIME_ATTACK_DURATIONS:
-        abort(400)
-
-    return render_template(
-        "time_attack_game.html",
-        duration_seconds=duration_seconds,
-        active_profile=get_active_profile(DATABASE_PATH),
-        chunks=list_continuous_chunks(DATABASE_PATH),
-    )
 
 
 @app.route("/play/classic")
@@ -225,76 +198,6 @@ def submit_classic_result():
     ), 201
 
 
-@app.route("/api/time-attack/results", methods=["POST"])
-def submit_time_attack_result():
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict):
-        return jsonify(error="Send a JSON result."), 400
-
-    duration_seconds = payload.get("duration_seconds")
-    if type(duration_seconds) is not int or duration_seconds not in TIME_ATTACK_DURATIONS:
-        return jsonify(error="Invalid Time Attack duration."), 400
-
-    active_profile = get_active_profile(DATABASE_PATH)
-    if active_profile is None:
-        return jsonify(error="Select an active profile to save results."), 409
-    if type(payload.get("profile_id")) is not int or payload["profile_id"] != active_profile["id"]:
-        return jsonify(error="The active profile changed. This run was not saved."), 409
-
-    chunks = list_continuous_chunks(DATABASE_PATH)
-    chunk_by_id = {chunk["id"]: chunk["text"] for chunk in chunks}
-    chunk_ids = payload.get("chunk_ids")
-    chunk_count = len(chunks)
-    if (not isinstance(chunk_ids, list) or not chunk_ids
-            or len(chunk_ids) % chunk_count != 0
-            or any(type(chunk_id) is not int for chunk_id in chunk_ids)):
-        return jsonify(error="Invalid chunk order."), 400
-    all_ids = set(chunk_by_id)
-    for offset in range(0, len(chunk_ids), chunk_count):
-        cycle = chunk_ids[offset:offset + chunk_count]
-        if set(cycle) != all_ids:
-            return jsonify(error="Chunks must be used once per cycle."), 400
-        if offset > 0 and chunk_ids[offset - 1] == cycle[0]:
-            return jsonify(error="A chunk repeated across cycles."), 400
-
-    target = " ".join(chunk_by_id[chunk_id] for chunk_id in chunk_ids)
-    typed_buffer = payload.get("typed_buffer")
-    if not isinstance(typed_buffer, str) or len(typed_buffer) > len(target):
-        return jsonify(error="Invalid typed buffer."), 400
-    if any(ord(character) < 32 or ord(character) == 127 or ord(character) > 65535
-           for character in typed_buffer):
-        return jsonify(error="The typed buffer contains an invalid character."), 400
-
-    correct_positions = sum(
-        typed_character == target[index]
-        for index, typed_character in enumerate(typed_buffer)
-    )
-    retained_characters = len(typed_buffer)
-    opportunity_positions = retained_characters
-    # At timeout the active run lasts exactly the selected duration.
-    active_elapsed_ms = duration_seconds * 1000
-    raw_wpm = retained_characters / 5 / (duration_seconds / 60)
-    accuracy = correct_positions / opportunity_positions if opportunity_positions else 0
-    result = {
-        "active_elapsed_ms": active_elapsed_ms,
-        "retained_characters": retained_characters,
-        "correct_positions": correct_positions,
-        "opportunity_positions": opportunity_positions,
-        "raw_wpm": raw_wpm,
-        "accuracy": accuracy,
-        "net_wpm": raw_wpm * accuracy,
-        "words_typed": target[:retained_characters].count(" "),
-    }
-    try:
-        session_id = save_time_attack_result(
-            DATABASE_PATH, active_profile["id"], duration_seconds, result
-        )
-    except ValueError as error:
-        return jsonify(error=str(error)), 409
-
-    return jsonify(saved=True, session_id=session_id), 201
-
-
 @app.route("/progress")
 def progress():
     active_profile = get_active_profile(DATABASE_PATH)
@@ -306,10 +209,6 @@ def progress():
         total_classic_levels=len(list_classic_levels(DATABASE_PATH)),
         summary=get_classic_summary(DATABASE_PATH, active_profile["id"]),
         recent_sessions=list_recent_classic_sessions(DATABASE_PATH, active_profile["id"]),
-        time_attack_summary=get_time_attack_summary(DATABASE_PATH, active_profile["id"]),
-        recent_time_attack_sessions=list_recent_time_attack_sessions(
-            DATABASE_PATH, active_profile["id"]
-        ),
     )
 
 
