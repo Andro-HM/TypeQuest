@@ -55,7 +55,7 @@ class TimeAttackDatabaseTests(unittest.TestCase):
             initialize_database(database_path)
             upgraded = get_connection(database_path)
             try:
-                self.assertEqual(upgraded.execute("PRAGMA user_version").fetchone()[0], 3)
+                self.assertEqual(upgraded.execute("PRAGMA user_version").fetchone()[0], 4)
                 old = upgraded.execute("SELECT * FROM sessions WHERE id = 7").fetchone()
                 self.assertEqual((old["profile_id"], old["mode"], old["level_id"]),
                                  (1, "classic", 1))

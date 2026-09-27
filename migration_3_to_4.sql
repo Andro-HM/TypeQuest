@@ -1,20 +1,7 @@
+PRAGMA foreign_keys = OFF;
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS profiles (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 24),
-    name_key TEXT NOT NULL UNIQUE,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS app_settings (
-    id INTEGER PRIMARY KEY CHECK (id = 1),
-    active_profile_id INTEGER REFERENCES profiles(id) ON DELETE SET NULL
-);
-
-INSERT OR IGNORE INTO app_settings (id, active_profile_id) VALUES (1, NULL);
-
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE sessions_new (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     mode TEXT NOT NULL CHECK (mode IN ('classic', 'time_attack', 'survival')),
@@ -45,29 +32,20 @@ CREATE TABLE IF NOT EXISTS sessions (
     )
 );
 
-CREATE INDEX IF NOT EXISTS sessions_profile_recent
-ON sessions (profile_id, id DESC);
+INSERT INTO sessions_new (
+    id, profile_id, mode, level_id, selected_duration_seconds, completed_at,
+    active_elapsed_ms, retained_characters, correct_positions,
+    opportunity_positions, raw_wpm, accuracy, net_wpm, stars_earned, words_typed
+)
+SELECT id, profile_id, mode, level_id, selected_duration_seconds, completed_at,
+       active_elapsed_ms, retained_characters, correct_positions,
+       opportunity_positions, raw_wpm, accuracy, net_wpm, stars_earned, words_typed
+FROM sessions;
 
-CREATE TABLE IF NOT EXISTS classic_progress (
-    profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    level_id INTEGER NOT NULL,
-    best_stars INTEGER NOT NULL CHECK (best_stars BETWEEN 1 AND 3),
-    best_net_wpm REAL NOT NULL CHECK (best_net_wpm >= 0),
-    PRIMARY KEY (profile_id, level_id)
-);
-
-CREATE TABLE IF NOT EXISTS classic_levels (
-    id INTEGER PRIMARY KEY CHECK (id BETWEEN 1 AND 50),
-    tier INTEGER NOT NULL CHECK (tier BETWEEN 1 AND 5),
-    title TEXT NOT NULL CHECK (length(trim(title)) > 0),
-    passage TEXT NOT NULL CHECK (length(passage) > 0)
-);
-
-CREATE TABLE IF NOT EXISTS continuous_chunks (
-    id INTEGER PRIMARY KEY CHECK (id BETWEEN 1 AND 100),
-    tier INTEGER NOT NULL CHECK (tier BETWEEN 1 AND 5),
-    text TEXT NOT NULL CHECK (length(text) > 0)
-);
+DROP TABLE sessions;
+ALTER TABLE sessions_new RENAME TO sessions;
+CREATE INDEX sessions_profile_recent ON sessions (profile_id, id DESC);
 
 PRAGMA user_version = 4;
 COMMIT;
+PRAGMA foreign_keys = ON;

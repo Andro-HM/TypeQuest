@@ -105,7 +105,7 @@ class ContentStorageTests(unittest.TestCase):
                         f"SELECT * FROM {table} ORDER BY rowid"
                     )], expected,
                 )
-            self.assertEqual(connection.execute("PRAGMA user_version").fetchone()[0], 3)
+            self.assertEqual(connection.execute("PRAGMA user_version").fetchone()[0], 4)
             self.assertEqual(connection.execute("PRAGMA foreign_key_check").fetchall(), [])
         finally:
             connection.close()

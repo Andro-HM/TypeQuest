@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Survival | TypeQuest{% endblock %}
+
+{% block content %}
+  <div class="page-heading game-heading">
+    <span class="eyebrow">Survival mode</span>
+    <h1>Stay ahead of the boundary</h1>
+    <p>The text moves automatically. Correct characters in the active window before they leave the left edge.</p>
+  </div>
+  {% if active_profile %}
+    <p class="notice notice-success">Playing as <strong>{{ active_profile.name }}</strong>.</p>
+  {% else %}
+    <p class="notice">No active profile. You may play, but this result cannot be saved. <a href="{{ url_for('profiles') }}">Choose a profile</a>.</p>
+  {% endif %}
+  <dl class="metric-grid survival-hud" aria-label="Survival status">
+    <div><dt>Active time</dt><dd id="survival-time">0.0 s</dd></div>
+    <div><dt>Net WPM</dt><dd id="survival-net-wpm">0.0</dd></div>
+    <div><dt>Accuracy</dt><dd id="survival-accuracy">0.0%</dd></div>
+    <div><dt>Hearts</dt><dd id="survival-hearts">♥ 3.0 / 3</dd></div>
+    <div><dt>Tier</dt><dd id="survival-tier">1 / 5</dd></div>
+  </dl>
+  <section class="card game-panel survival-panel" aria-label="Survival typing challenge">
+    <div class="game-panel-header">
+      <div>
+        <span class="eyebrow">Moving passage</span>
+        <h2>Keep typing as the text scrolls</h2>
+      </div>
+      <span id="survival-status" class="status-pill" role="status">Starting in 3...</span>
+    </div>
+    <div
+      id="survival-area"
+      class="typing-area survival-viewport"
+      tabindex="0"
+      aria-label="Survival typing area"
+      data-profile-id="{{ active_profile.id if active_profile else '' }}"
+      data-save-url="{{ url_for('submit_survival_result') }}"
+    ><div id="survival-track" class="survival-track"></div></div>
+    <p id="survival-damage" class="section-note">0 / 6 mistakes toward the next half heart</p>
+    <div class="typing-controls">
+      <button id="survival-pause" class="button button-secondary" type="button">Pause</button>
+      <button id="survival-resume" class="button button-primary" type="button" disabled>Resume</button>
+    </div>
+  </section>
+  <section id="survival-result" class="card result-panel" hidden>
+    <span class="badge badge-complete">Finished</span>
+    <h2>Run ended</h2>
+    <dl class="metric-grid result-metrics">
+      <div><dt>Survived</dt><dd id="survival-result-time"></dd></div>
+      <div><dt>Tier reached</dt><dd id="survival-result-tier"></dd></div>
+      <div><dt>Raw WPM</dt><dd id="survival-result-raw"></dd></div>
+      <div><dt>Accuracy</dt><dd id="survival-result-accuracy"></dd></div>
+      <div><dt>Net WPM</dt><dd id="survival-result-net"></dd></div>
+    </dl>
+    <p id="survival-save-status" class="notice" role="status">Saving result...</p>
+    <a class="button button-primary" href="{{ url_for('survival') }}">Play again</a>
+  </section>
+  <script id="survival-chunks" type="application/json">{{ chunks|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+  <script type="module" src="{{ url_for('static', filename='js/survival_page.js') }}"></script>
+{% endblock %}

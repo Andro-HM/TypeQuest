@@ -539,6 +539,36 @@ h3 {
   white-space: pre;
 }
 
+.survival-hud {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.survival-panel {
+  max-width: 860px;
+}
+
+.survival-viewport {
+  width: min(100%, calc(60ch + 5px));
+  min-height: 5.8rem;
+  padding: 1rem 0;
+  overflow: hidden;
+  border-left: 5px solid var(--primary);
+  background: #eef5f7;
+  font-size: 1.2rem;
+  line-height: 2.7;
+  white-space: pre;
+}
+
+.survival-track {
+  display: flex;
+  width: max-content;
+}
+
+.survival-character {
+  flex: none;
+  width: 1ch;
+}
+
 .typing-character.is-untouched {
   color: #63737d;
 }
@@ -759,6 +789,10 @@ h3 {
 }
 
 @media (max-width: 900px) {
+  .survival-hud {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .mode-grid,
   .level-grid,
   .profile-grid,
@@ -799,7 +833,8 @@ h3 {
 
   .metric-grid,
   .page-section > .metric-grid,
-  .result-metrics {
+  .result-metrics,
+  .survival-hud {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

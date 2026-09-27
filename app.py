@@ -10,6 +10,7 @@ from database import (
     get_active_profile,
     get_classic_level,
     get_classic_summary,
+    get_survival_summary,
     get_time_attack_summary,
     initialize_database,
     list_classic_progress,
@@ -17,18 +18,20 @@ from database import (
     list_continuous_chunks,
     list_profiles,
     list_recent_classic_sessions,
+    list_recent_survival_sessions,
     list_recent_time_attack_sessions,
     save_classic_result,
+    save_survival_result,
     save_time_attack_result,
     select_profile,
 )
 from progression import find_classic_block, get_classic_block_statuses
+from survival_rules import recompute_survival_result
 
 
 app = Flask(__name__)
 DATABASE_PATH = Path(app.instance_path) / "typequest.sqlite3"
 TIME_ATTACK_DURATIONS = (30, 60, 120, 180, 300)
-initialize_database(DATABASE_PATH)
 
 
 @app.template_filter("display_datetime")
@@ -111,6 +114,15 @@ def time_attack():
     return render_template(
         "time_attack_game.html",
         duration_seconds=duration_seconds,
+        active_profile=get_active_profile(DATABASE_PATH),
+        chunks=list_continuous_chunks(DATABASE_PATH),
+    )
+
+
+@app.route("/play/survival")
+def survival():
+    return render_template(
+        "survival_game.html",
         active_profile=get_active_profile(DATABASE_PATH),
         chunks=list_continuous_chunks(DATABASE_PATH),
     )
@@ -295,6 +307,36 @@ def submit_time_attack_result():
     return jsonify(saved=True, session_id=session_id), 201
 
 
+@app.route("/api/survival/results", methods=["POST"])
+def submit_survival_result():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify(error="Send a JSON result."), 400
+
+    active_profile = get_active_profile(DATABASE_PATH)
+    if active_profile is None:
+        return jsonify(error="Select an active profile to save results."), 409
+    if type(payload.get("profile_id")) is not int or payload["profile_id"] != active_profile["id"]:
+        return jsonify(error="The active profile changed. This run was not saved."), 409
+
+    try:
+        result = recompute_survival_result(
+            list_continuous_chunks(DATABASE_PATH),
+            payload.get("chunk_ids"),
+            payload.get("finalized_entries"),
+            payload.get("active_buffer"),
+        )
+    except ValueError as error:
+        return jsonify(error=str(error)), 400
+
+    try:
+        session_id = save_survival_result(DATABASE_PATH, active_profile["id"], result)
+    except ValueError as error:
+        return jsonify(error=str(error)), 409
+
+    return jsonify(saved=True, session_id=session_id, **result), 201
+
+
 @app.route("/progress")
 def progress():
     active_profile = get_active_profile(DATABASE_PATH)
@@ -308,6 +350,10 @@ def progress():
         recent_sessions=list_recent_classic_sessions(DATABASE_PATH, active_profile["id"]),
         time_attack_summary=get_time_attack_summary(DATABASE_PATH, active_profile["id"]),
         recent_time_attack_sessions=list_recent_time_attack_sessions(
+            DATABASE_PATH, active_profile["id"]
+        ),
+        survival_summary=get_survival_summary(DATABASE_PATH, active_profile["id"]),
+        recent_survival_sessions=list_recent_survival_sessions(
             DATABASE_PATH, active_profile["id"]
         ),
     )
@@ -346,4 +392,6 @@ def settings():
 
 
 if __name__ == "__main__":
+    # Tests import this module before selecting their temporary database.
+    initialize_database(DATABASE_PATH)
     app.run(host="127.0.0.1", port=5000)

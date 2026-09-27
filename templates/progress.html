@@ -88,5 +88,42 @@
       <div class="card empty-state"><p>No Time Attack sessions saved yet.</p><a class="text-link" href="{{ url_for('time_attack') }}">Start a timed challenge <span aria-hidden="true">→</span></a></div>
     {% endif %}
     </section>
+    <section class="page-section" aria-labelledby="survival-progress-heading">
+      <div class="section-header">
+        <div>
+          <span class="eyebrow">Endurance practice</span>
+          <h2 id="survival-progress-heading">Survival</h2>
+        </div>
+        <a class="text-link" href="{{ url_for('survival') }}">Play Survival <span aria-hidden="true">→</span></a>
+      </div>
+      <dl class="metric-grid">
+        <div><dt>Runs completed</dt><dd>{{ survival_summary.session_count }}</dd></div>
+        <div><dt>Longest survival</dt><dd>{{ "%.1f"|format(survival_summary.longest_elapsed_ms / 1000) }} s</dd></div>
+        <div><dt>Best net WPM</dt><dd>{{ "%.1f"|format(survival_summary.best_net_wpm) }}</dd></div>
+        <div><dt>Best accuracy</dt><dd>{{ "%.1f"|format(survival_summary.best_accuracy * 100) }}%</dd></div>
+      </dl>
+      <div class="section-header compact-header"><h3>Recent Survival sessions</h3></div>
+      {% if recent_survival_sessions %}
+        <div class="card table-wrap">
+          <table class="session-table">
+            <caption class="visually-hidden">Recent Survival sessions</caption>
+            <thead><tr><th scope="col">Time</th><th scope="col">Tier</th><th scope="col">Net WPM</th><th scope="col">Accuracy</th><th scope="col">Date</th></tr></thead>
+            <tbody>
+              {% for session in recent_survival_sessions %}
+                <tr>
+                  <th scope="row">{{ "%.1f"|format(session.active_elapsed_ms / 1000) }} s</th>
+                  <td>Tier {{ session.tier_reached }}</td>
+                  <td>{{ "%.1f"|format(session.net_wpm) }}</td>
+                  <td>{{ "%.1f"|format(session.accuracy * 100) }}%</td>
+                  <td><time datetime="{{ session.completed_at|replace(' ', 'T') }}Z">{{ session.completed_at|display_datetime }}</time></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="card empty-state"><p>No Survival runs saved yet.</p></div>
+      {% endif %}
+    </section>
   {% endif %}
 {% endblock %}

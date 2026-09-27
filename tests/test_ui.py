@@ -23,7 +23,7 @@ class BaselineUiTests(unittest.TestCase):
         for path in (
             "/", "/play", "/progress", "/profiles", "/settings",
             "/play/classic", "/play/classic/1", "/play/time-attack",
-            "/play/time-attack?duration=30",
+            "/play/time-attack?duration=30", "/play/survival",
         ):
             with self.subTest(path=path):
                 response = self.client.get(path)
@@ -35,7 +35,7 @@ class BaselineUiTests(unittest.TestCase):
         self.assertIn(b'aria-disabled="true"', levels)
         self.assertNotIn(b'href="/play/classic/11"', levels)
         self.assertEqual(self.client.get("/play/classic/11").status_code, 403)
-        self.assertIn(b"Not available yet", self.client.get("/play").data)
+        self.assertIn(b'href="/play/survival"', self.client.get("/play").data)
 
     def test_profile_and_classic_result_appear_in_progress_table(self):
         response = self.client.post("/profiles/create", data={"name": "UI Tester"})
