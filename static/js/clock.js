@@ -1,3 +1,5 @@
+
+  // Initialize the clock state before typing begins.
 export function createClock() {
   return {
     hasStarted: false,
@@ -7,6 +9,7 @@ export function createClock() {
   };
 }
 
+// Start the clock when the player begins typing.
 export function startClock(clock, nowMs) {
   if (clock.hasStarted || clock.isPaused) {
     return false;
@@ -17,6 +20,7 @@ export function startClock(clock, nowMs) {
   return true;
 }
 
+// Pause the clock and save the elapsed active time.
 export function pauseClock(clock, nowMs) {
   if (clock.isPaused) {
     return false;
@@ -31,6 +35,7 @@ export function pauseClock(clock, nowMs) {
   return true;
 }
 
+// Resume the clock without counting the time spent paused.
 export function resumeClock(clock, nowMs) {
   if (!clock.isPaused) {
     return false;
@@ -43,6 +48,7 @@ export function resumeClock(clock, nowMs) {
   return true;
 }
 
+// Return the total active elapsed time, excluding pauses.
 export function getActiveElapsedMs(clock, nowMs) {
   if (clock.runningSinceMs === null) {
     return clock.elapsedBeforeRunMs;

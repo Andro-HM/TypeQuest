@@ -1,6 +1,9 @@
+
 import { getActiveElapsedMs, pauseClock } from "./clock.js";
 import { calculateMetrics, countBufferMetrics } from "./metrics.js";
 
+
+// Initialize a new Classic run with no completion or result.
 export function createClassicRun() {
   return {
     isComplete: false,
@@ -8,6 +11,8 @@ export function createClassicRun() {
   };
 }
 
+
+// Assign 1, 2, or 3 stars based on typing accuracy.
 export function starsForAccuracy(accuracy) {
   if (accuracy >= 0.95) {
     return 3;
@@ -18,6 +23,8 @@ export function starsForAccuracy(accuracy) {
   return 1;
 }
 
+
+// Complete the level, stop the timer, and calculate the final results.
 export function completeClassicRun(run, typingState, clock, nowMs) {
   if (run.isComplete || typingState.typedBuffer.length !== typingState.target.length) {
     return null;
@@ -36,5 +43,6 @@ export function completeClassicRun(run, typingState, clock, nowMs) {
     completionTimeMs: completionTimeMs,
     starsEarned: starsForAccuracy(metrics.accuracy),
   };
+
   return run.result;
 }
