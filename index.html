@@ -11,16 +11,69 @@
     <header class="site-header">
       <div class="header-content">
         <span class="brand"><span class="brand-mark" aria-hidden="true">TQ</span> TypeQuest</span>
-        <span class="demo-label">Week 1 demo</span>
+        <nav class="site-nav" aria-label="Main navigation">
+          <button id="home-nav" class="nav-button is-active" type="button" aria-current="page">Home</button>
+          <button id="play-nav" class="nav-button" type="button">Play</button>
+          <button class="nav-button" type="button" disabled title="Coming later">Progress</button>
+          <button class="nav-button" type="button" disabled title="Coming later">Profiles</button>
+          <button class="nav-button" type="button" disabled title="Coming later">Settings</button>
+        </nav>
       </div>
     </header>
     <main>
-      <section id="home-screen" class="screen card hero">
-        <p class="eyebrow">A little practice. A little progress.</p>
-        <h1 tabindex="-1">Find your typing rhythm.</h1>
-        <p class="lead">Choose a passage, type at your own pace, and watch your speed and accuracy as you go.</p>
-        <button id="start-button" type="button">Start Classic <span aria-hidden="true">&rarr;</span></button>
-        <p class="muted">Three levels. One goal: type the complete passage.</p>
+      <section id="home-screen" class="screen">
+        <div class="card hero">
+          <p class="eyebrow">Typing practice, made purposeful</p>
+          <h1 tabindex="-1">TypeQuest</h1>
+          <p class="lead">Build speed and precision through focused typing challenges. Pick a Classic level and track your speed and accuracy as you type.</p>
+          <button id="start-button" type="button">Start playing <span aria-hidden="true">&rarr;</span></button>
+        </div>
+        <section class="home-challenges" aria-labelledby="home-challenges-heading">
+          <p class="eyebrow">Choose your challenge</p>
+          <h2 id="home-challenges-heading">Your challenges</h2>
+          <div class="mode-list">
+            <article class="card mode-card">
+              <span class="badge badge-available">Available</span>
+              <h3>Classic</h3>
+              <p>Choose from three passages and practice at your own pace.</p>
+            </article>
+            <article class="card mode-card is-unavailable">
+              <span class="badge badge-muted">Coming next</span>
+              <h3>Time Attack</h3>
+              <p>A timed challenge is planned for a future update.</p>
+            </article>
+            <article class="card mode-card is-unavailable">
+              <span class="badge badge-muted">Coming later</span>
+              <h3>Survival</h3>
+              <p>A new challenge is on the way.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+      <section id="play-screen" class="screen" hidden>
+        <p class="eyebrow">Game modes</p>
+        <h1 tabindex="-1">Choose your challenge</h1>
+        <p class="lead">Play Classic now. More modes are planned for later development phases.</p>
+        <div class="mode-list">
+          <article class="card mode-card">
+            <span class="badge badge-available">Available</span>
+            <h2>Classic</h2>
+            <p>Three freely selectable levels. Type a passage and view your speed and accuracy.</p>
+            <button id="classic-button" type="button">Play Classic <span aria-hidden="true">&rarr;</span></button>
+          </article>
+          <article class="card mode-card is-unavailable">
+            <span class="badge badge-muted">Coming next</span>
+            <h2>Time Attack</h2>
+            <p>A timed typing challenge is planned for the next development phase.</p>
+            <button type="button" disabled>Not available yet</button>
+          </article>
+          <article class="card mode-card is-unavailable">
+            <span class="badge badge-muted">Coming later</span>
+            <h2>Survival</h2>
+            <p>Stay ahead of the moving boundary in a future mode.</p>
+            <button type="button" disabled>Not available yet</button>
+          </article>
+        </div>
       </section>
       <section id="levels-screen" class="screen" hidden>
         <p class="eyebrow">Classic mode</p>
@@ -62,8 +115,13 @@
           <p class="legend"><span class="correct">Correct</span> <span class="incorrect">Incorrect</span> <span class="untouched">Untouched</span></p>
           <label for="typing-input">Type the passage here</label>
           <textarea id="typing-input" rows="4" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="typing-help" disabled></textarea>
-          <p id="typing-help" class="muted">The timer starts when you type. You can use Backspace and the arrow keys to edit. Paste and line breaks are blocked.</p>
+          <p id="typing-help" class="muted">The timer starts when you type. Use Pause to take a break and Play to continue. Paste and line breaks are blocked.</p>
           <p id="character-count" class="character-count">0 characters entered</p>
+          <div class="actions typing-controls">
+            <button id="pause-button" class="secondary" type="button" disabled>Pause</button>
+            <button id="play-button" type="button" disabled>Play</button>
+            <p id="typing-status" class="muted" role="status">Start typing to begin.</p>
+          </div>
         </div>
       </section>
       <section id="results-screen" class="screen card result-card" hidden>
@@ -83,6 +141,5 @@
         </div>
       </section>
     </main>
-    <footer>TypeQuest &middot; Classic typing practice</footer>
   </body>
 </html>

@@ -17,6 +17,11 @@ const typingInput = document.getElementById("typing-input");
 const targetDisplay = document.getElementById("target-passage");
 const screens = document.querySelectorAll(".screen");
 const levelButtons = document.querySelectorAll(".level-button");
+const pauseButton = document.getElementById("pause-button");
+const playButton = document.getElementById("play-button");
+const typingStatus = document.getElementById("typing-status");
+const homeNav = document.getElementById("home-nav");
+const playNav = document.getElementById("play-nav");
 
 let currentLevelIndex = 0;
 let targetPassage = "";
@@ -27,15 +32,39 @@ let rawWPM = 0;
 let accuracy = 0;
 let netWPM = 0;
 let isComplete = false;
+let isPaused = false;
 
-// Show one page section and move keyboard focus to its heading.
+// Show one section, mark its navigation tab, and focus its heading.
 function showScreen(screenId) {
   for (let index = 0; index < screens.length; index += 1) {
     screens[index].hidden = true;
   }
   const screen = document.getElementById(screenId);
   screen.hidden = false;
+  homeNav.classList.remove("is-active");
+  playNav.classList.remove("is-active");
+  homeNav.removeAttribute("aria-current");
+  playNav.removeAttribute("aria-current");
+  if (screenId === "home-screen") {
+    homeNav.classList.add("is-active");
+    homeNav.setAttribute("aria-current", "page");
+  } else {
+    playNav.classList.add("is-active");
+    playNav.setAttribute("aria-current", "page");
+  }
   screen.querySelector("h1").focus();
+}
+
+// Open Home and pause any unfinished typing attempt.
+function showHome() {
+  pauseLevel();
+  showScreen("home-screen");
+}
+
+// Open the game-mode choices and pause any unfinished typing attempt.
+function showPlay() {
+  pauseLevel();
+  showScreen("play-screen");
 }
 
 // Open the three freely selectable Classic levels.
@@ -56,10 +85,14 @@ function startLevel(event) {
   accuracy = 0;
   netWPM = 0;
   isComplete = false;
+  isPaused = false;
   targetPassage = levels[currentLevelIndex].passage;
   typingInput.value = "";
   typingInput.maxLength = targetPassage.length;
   typingInput.disabled = false;
+  pauseButton.disabled = true;
+  playButton.disabled = true;
+  typingStatus.textContent = "Start typing to begin.";
   document.getElementById("level-label").textContent = "Classic / Level " + (currentLevelIndex + 1);
   document.getElementById("level-title").textContent = levels[currentLevelIndex].title;
   updateHighlighting();
@@ -70,7 +103,7 @@ function startLevel(event) {
 
 // Handle native textarea edits, start timing, and check for completion.
 function handleTyping() {
-  if (isComplete) {
+  if (isComplete || isPaused) {
     return;
   }
   const enteredText = typingInput.value;
@@ -86,6 +119,8 @@ function handleTyping() {
   if (startTime === null && typingInput.value.length > 0) {
     startTime = performance.now();
     timerInterval = setInterval(updateMetrics, 100);
+    pauseButton.disabled = false;
+    typingStatus.textContent = "Typing";
   }
   updateHighlighting();
   updateMetrics();
@@ -108,7 +143,7 @@ function countCorrectCharacters() {
 
 // Calculate unrounded metrics from retained text and display one decimal place.
 function updateMetrics() {
-  if (startTime !== null && !isComplete) {
+  if (startTime !== null && !isComplete && !isPaused) {
     elapsedMilliseconds = performance.now() - startTime;
   }
   const typedLength = typingInput.value.length;
@@ -148,9 +183,40 @@ function updateHighlighting() {
   }
 }
 
+// Freeze active time and prevent editing until Play is pressed.
+function pauseLevel() {
+  if (startTime === null || isPaused || isComplete) {
+    return;
+  }
+  updateMetrics();
+  isPaused = true;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  typingInput.disabled = true;
+  pauseButton.disabled = true;
+  playButton.disabled = false;
+  typingStatus.textContent = "Paused. Press Play to continue.";
+}
+
+// Resume from the saved elapsed time by adjusting the start timestamp.
+function playLevel() {
+  if (!isPaused || isComplete) {
+    return;
+  }
+  startTime = performance.now() - elapsedMilliseconds;
+  isPaused = false;
+  typingInput.disabled = false;
+  pauseButton.disabled = false;
+  playButton.disabled = true;
+  typingStatus.textContent = "Typing";
+  timerInterval = setInterval(updateMetrics, 100);
+  updateMetrics();
+  typingInput.focus();
+}
+
 // Stop the attempt once and show its final metrics, even if it has mistakes.
 function finishLevel() {
-  if (isComplete) {
+  if (isComplete || isPaused) {
     return;
   }
   clearInterval(timerInterval);
@@ -158,6 +224,9 @@ function finishLevel() {
   updateMetrics();
   isComplete = true;
   typingInput.disabled = true;
+  pauseButton.disabled = true;
+  playButton.disabled = true;
+  typingStatus.textContent = "Complete";
   document.getElementById("result-level").textContent = "Level " + (currentLevelIndex + 1) + ": " + levels[currentLevelIndex].title;
   document.getElementById("result-time").textContent = (elapsedMilliseconds / 1000).toFixed(1) + " s";
   document.getElementById("result-raw-wpm").textContent = rawWPM.toFixed(1);
@@ -175,9 +244,14 @@ function restrictTyping(event) {
   }
 }
 
-document.getElementById("start-button").addEventListener("click", showLevelSelection);
+homeNav.addEventListener("click", showHome);
+playNav.addEventListener("click", showPlay);
+document.getElementById("start-button").addEventListener("click", showPlay);
+document.getElementById("classic-button").addEventListener("click", showLevelSelection);
 document.getElementById("choose-level-button").addEventListener("click", showLevelSelection);
 document.getElementById("retry-button").addEventListener("click", startLevel);
+pauseButton.addEventListener("click", pauseLevel);
+playButton.addEventListener("click", playLevel);
 for (let index = 0; index < levelButtons.length; index += 1) {
   levelButtons[index].addEventListener("click", startLevel);
 }
