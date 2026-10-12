@@ -1,0 +1,232 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #1b2d3b;
+  background: #f2f5f7;
+  line-height: 1.6;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+
+.site-header {
+  border-top: 4px solid #195b73;
+  border-bottom: 1px solid #d9e2e8;
+  background: #ffffff;
+}
+
+.header-content,
+main,
+footer {
+  width: min(960px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.brand-mark {
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: #195b73;
+  color: #ffffff;
+  font-size: 0.8rem;
+}
+
+.demo-label,
+.muted,
+footer {
+  color: #526575;
+  font-size: 0.9rem;
+}
+
+main { padding: 42px 0 24px; }
+
+.card {
+  padding: 28px;
+  border: 1px solid #d9e2e8;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(24, 51, 70, 0.05);
+}
+
+.hero {
+  padding: 50px;
+  background: linear-gradient(120deg, #ffffff, #edf6f8);
+}
+
+h1,
+h2,
+p { margin: 0 0 16px; }
+
+h1 {
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+h1:focus { outline: none; }
+
+h2 {
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.eyebrow {
+  margin-bottom: 12px;
+  color: #195b73;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lead {
+  max-width: 650px;
+  color: #526575;
+  font-size: 1.05rem;
+}
+
+button {
+  padding: 12px 18px;
+  border: 1px solid #195b73;
+  border-radius: 8px;
+  background: #195b73;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+button:hover { background: #12485e; }
+.secondary { background: #ffffff; color: #195b73; }
+.secondary:hover { background: #e7f2f5; }
+
+button:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #195b73;
+  outline-offset: 3px;
+}
+
+.hero .muted { margin: 20px 0 0; }
+
+.level-list,
+.metrics,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.level-list { margin-top: 26px; }
+
+.level-card {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.level-card p:not(.eyebrow) { color: #526575; }
+.level-card button { margin-top: auto; }
+.metrics { margin: 26px 0; }
+
+.metric {
+  flex: 1 1 170px;
+  padding: 16px 20px;
+  border: 1px solid #d9e2e8;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+dt { color: #526575; font-size: 0.8rem; }
+
+dd {
+  margin: 2px 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.passage {
+  padding: 20px;
+  border: 1px solid #d9e2e8;
+  border-radius: 8px;
+  background: #f8fafb;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.correct { background: #e0f1e7; color: #17634d; }
+.incorrect { background: #ffe1e1; color: #a52d31; }
+.untouched { color: #526575; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8rem;
+}
+
+.legend span { padding: 2px 6px; border-radius: 4px; }
+
+label {
+  display: block;
+  margin: 20px 0 8px;
+  font-weight: 650;
+}
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 16px;
+  border: 1px solid #aabfc9;
+  border-radius: 8px;
+  color: #1b2d3b;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.typing-card .muted { margin-top: 12px; }
+
+.character-count {
+  margin-bottom: 0;
+  color: #195b73;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.result-card .actions { margin-top: 24px; }
+footer { padding: 18px 0 32px; }
+
+@media (max-width: 600px) {
+  .header-content,
+  main,
+  footer { width: calc(100% - 28px); }
+
+  main { padding-top: 28px; }
+  .card,
+  .hero { padding: 22px; }
+  .metrics { gap: 10px; }
+  .metric { flex-basis: 130px; padding: 12px; }
+  .passage { padding: 14px; }
+}

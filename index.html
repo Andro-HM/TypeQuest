@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TypeQuest | Week 1 Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-content">
+        <span class="brand"><span class="brand-mark" aria-hidden="true">TQ</span> TypeQuest</span>
+        <span class="demo-label">Week 1 demo</span>
+      </div>
+    </header>
+    <main>
+      <section id="home-screen" class="screen card hero">
+        <p class="eyebrow">A little practice. A little progress.</p>
+        <h1 tabindex="-1">Find your typing rhythm.</h1>
+        <p class="lead">Choose a passage, type at your own pace, and watch your speed and accuracy as you go.</p>
+        <button id="start-button" type="button">Start Classic <span aria-hidden="true">&rarr;</span></button>
+        <p class="muted">Three levels. One goal: type the complete passage.</p>
+      </section>
+      <section id="levels-screen" class="screen" hidden>
+        <p class="eyebrow">Classic mode</p>
+        <h1 tabindex="-1">Choose a level</h1>
+        <p class="lead">All three levels are ready to play. Pick any one to begin.</p>
+        <div class="level-list">
+          <article class="card level-card">
+            <p class="eyebrow">Level 1</p>
+            <h2>A quiet morning</h2>
+            <p>A short warm-up about starting the day.</p>
+            <button class="level-button" data-level="0" type="button">Play Level 1</button>
+          </article>
+          <article class="card level-card">
+            <p class="eyebrow">Level 2</p>
+            <h2>A shared idea</h2>
+            <p>Practice spaces and punctuation with a small team.</p>
+            <button class="level-button" data-level="1" type="button">Play Level 2</button>
+          </article>
+          <article class="card level-card">
+            <p class="eyebrow">Level 3</p>
+            <h2>Keep exploring</h2>
+            <p>A longer passage to find a steady pace.</p>
+            <button class="level-button" data-level="2" type="button">Play Level 3</button>
+          </article>
+        </div>
+      </section>
+      <section id="typing-screen" class="screen" hidden>
+        <p id="level-label" class="eyebrow">Classic mode</p>
+        <h1 id="level-title" tabindex="-1"></h1>
+        <dl class="metrics" aria-label="Live typing metrics">
+          <div class="metric"><dt>Elapsed time</dt><dd id="elapsed-time">0.0 s</dd></div>
+          <div class="metric"><dt>Raw WPM</dt><dd id="raw-wpm">0.0</dd></div>
+          <div class="metric"><dt>Accuracy</dt><dd id="accuracy">0.0%</dd></div>
+          <div class="metric"><dt>Net WPM</dt><dd id="net-wpm">0.0</dd></div>
+        </dl>
+        <div class="card typing-card">
+          <h2 id="passage-heading">Your passage</h2>
+          <p id="target-passage" class="passage" aria-labelledby="passage-heading"></p>
+          <p class="legend"><span class="correct">Correct</span> <span class="incorrect">Incorrect</span> <span class="untouched">Untouched</span></p>
+          <label for="typing-input">Type the passage here</label>
+          <textarea id="typing-input" rows="4" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="typing-help" disabled></textarea>
+          <p id="typing-help" class="muted">The timer starts when you type. You can use Backspace and the arrow keys to edit. Paste and line breaks are blocked.</p>
+          <p id="character-count" class="character-count">0 characters entered</p>
+        </div>
+      </section>
+      <section id="results-screen" class="screen card result-card" hidden>
+        <p class="eyebrow">Passage complete</p>
+        <h1 tabindex="-1">Nice work. Here is your result.</h1>
+        <p id="result-level" class="lead"></p>
+        <dl class="metrics" aria-label="Final typing metrics">
+          <div class="metric"><dt>Completion time</dt><dd id="result-time">0.0 s</dd></div>
+          <div class="metric"><dt>Raw WPM</dt><dd id="result-raw-wpm">0.0</dd></div>
+          <div class="metric"><dt>Accuracy</dt><dd id="result-accuracy">0.0%</dd></div>
+          <div class="metric"><dt>Net WPM</dt><dd id="result-net-wpm">0.0</dd></div>
+        </dl>
+        <p class="muted">Completed passages can include mistakes. Retry to practice the same text, or try another level.</p>
+        <div class="actions">
+          <button id="retry-button" type="button">Retry</button>
+          <button id="choose-level-button" class="secondary" type="button">Choose Another Level</button>
+        </div>
+      </section>
+    </main>
+    <footer>TypeQuest &middot; Classic typing practice</footer>
+  </body>
+</html>

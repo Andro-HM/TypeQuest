@@ -1,67 +1,29 @@
-# TypeQuest
+# TypeQuest: Week 1 Frontend Demo
 
-TypeQuest is a local typing game for the Design Thinking & Idea Lab. This branch is the presentable Week-1 demonstration build of TypeQuest; ongoing full development continues on `main`.
+A small Classic typing game with three freely selectable, fixed passages. Type in a normal textarea, see positional character highlights and live metrics, then view your result and retry or choose another level.
 
-## Week-1 features
+## Run
 
-- Local player profiles and saved Classic results
-- Classic typing with exactly 20 levels stored in SQLite
-- Levels 1–10 unlocked at the start; levels 11–20 unlock at 23 cumulative best stars from levels 1–10
-- Live raw WPM, accuracy, and net WPM, with accuracy-based stars
-- Pause and focus-loss handling
-- Classic Progress page and responsive baseline UI
+Open `index.html` directly in current Chrome or Edge. No server, installation, or internet connection is needed. Keep the three source files together so their relative paths work.
 
-## Not implemented in this branch
+## Files
 
-Time Attack, Survival, profile rename/delete/reset, audio or sound effects, and final Week-3/Week-4 polish are not included.
+- `index.html`: the Home, level-selection, typing, and results sections, plus their buttons and metric displays.
+- `style.css`: navy/teal styling, character colors, and responsive layouts.
+- `script.js`: three original passages, attempt state, event handlers, timing, metric calculations, and section visibility.
 
-## Technology and offline use
+## Follow the JavaScript
 
-The project uses HTML, CSS, vanilla JavaScript, Flask/Python, and SQLite. The application and its content run locally without external APIs, hosted services, or network assets, so it can be demonstrated offline after dependencies are installed.
+1. Start Classic calls `showLevelSelection()`, which uses `showScreen()` to show the level choices.
+2. A level button calls `startLevel()`. It loads the passage, clears the previous attempt, renders untouched characters, and focuses the textarea. Retry calls the same function for the current level.
+3. Native typing and editing trigger `handleTyping()`. The first non-empty input starts the timestamp timer and a 100 ms display refresh.
+4. `updateHighlighting()` compares each entered character with the same target position. `countCorrectCharacters()` supplies the matching count to `updateMetrics()`.
+5. `updateMetrics()` calculates raw WPM, accuracy, and net WPM from the current text and elapsed time. Values are rounded only for display; an empty denominator gives zero.
+6. Reaching the target length calls `finishLevel()`, which stops timing, disables input, and displays the final metrics. Incorrect characters do not prevent completion.
+7. `restrictTyping()` blocks paste, dropped text, and Enter/line-break input. The textarea's `maxlength` and an input cleanup loop also enforce the length and single-line limits.
 
-## Run on Windows
+Backspace, selection, insertion, replacement, and cursor movement use normal browser textarea behavior. Deleting all text after the timer starts does not restart the timer. Each new attempt resets it.
 
-From the repository root in PowerShell:
+## Intentionally absent
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt  # only if dependencies are not installed
-python app.py
-```
-
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in a browser.
-
-This branch stores its local database at `instance/typequest_week1.sqlite3`. It is generated on first run and is gitignored.
-
-## Classic progression
-
-| Levels | Availability |
-| --- | --- |
-| 1–10 | Unlocked from the start |
-| 11–20 | Unlock at 23/30 cumulative best stars from levels 1–10 |
-
-Speed does not affect unlocking.
-
-## Tests
-
-```powershell
-python -m unittest discover -s tests -v
-node --test tests/classic_js.test.mjs
-```
-
-## Project structure
-
-| Path | Purpose |
-| --- | --- |
-| `app.py` | Flask routes and result validation |
-| `database.py` | SQLite setup and queries |
-| `progression.py` | Classic tier unlock rules |
-| `schema.sql` | Week-1 database schema |
-| `seed_content.sql` | Initial Classic level content |
-| `templates/` | Flask/Jinja pages |
-| `static/` | Local CSS and browser JavaScript |
-| `tests/` | Python and JavaScript tests |
-
-## Branches and history
-
-`week1-demo` preserves this demonstration milestone. `main` contains later development, and `v0.1-foundation` remains the earlier historical snapshot.
+There are no profiles, storage, saved scores, database, backend requests, unlocking, stars, other game modes, pause/resume, settings, or audio. Results exist only for the current attempt. The existing Flask application elsewhere in the repository is separate from this prototype.
